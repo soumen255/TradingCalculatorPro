@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Crypto Price Alert</title>
+  <style>
+    body {
+      background: #111;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding-top: 50px;
+    }
+
+    input,
+    button {
+      padding: 10px;
+      margin: 5px;
+      border-radius: 5px;
+      border: none;
+      font-size: 16px;
+    }
+
+    button {
+      background-color: #00ffcc;
+      cursor: pointer;
+    }
+
+    #stopBtn {
+      background-color: red;
+      color: white;
+      display: none;
+      margin-top: 20px;
+    }
+
+    .alert {
+      color: red;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+
+    .price {
+      margin-top: 10px;
+      font-size: 20px;
+    }
+
+    .error {
+      color: orange;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>🔔 Crypto Price Alert</h1>
+
+  <input type="text" id="symbolInput" placeholder="Symbol (e.g., BTCUSDT)" />
+  <input type="number" step="0.00000001" id="targetPrice" placeholder="Alert if price below" />
+  <button onclick="startTracking()">Start</button>
+
+  <div class="price" id="priceDisplay">No price yet</div>
+  <div class="alert" id="alertBox"></div>
+  <div class="error" id="errorBox"></div>
+
+  <button id="stopBtn" onclick="stopAlarm()">🛑 Stop Alarm</button>
+
+  <audio id="alertSound" loop preload="auto">
+    <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
+    Your browser does not support the audio element.
+  </audio>
+
+  <script>
+    let interval;
+    let alarmTriggered = false;
+
+    async function getPrice(symbol) {
+      try {
+        const res = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`);
+        if (!res.ok) throw new Error("Symbol not found");
+        const data = await res.json();
+        return parseFloat(data.price);
+      } catch (err) {
+        throw new Error("Invalid symbol or API error");
+      }
+    }
+
+    function startTracking() {
+      const symbol = document.getElementById("symbolInput").value.trim().toUpperCase();
+      const target = parseFloat(document.getElementById("targetPrice").value);
+      const priceDisplay = document.getElementById("priceDisplay");
+      const alertBox = document.getElementById("alertBox");
+      const errorBox = document.getElementById("errorBox");
+      const stopBtn = document.getElementById("stopBtn");
+
+      if (!symbol || isNaN(target)) {
+        alert("Please enter a valid symbol and target price.");
+        return;
+      }
+
+      stopAlarm(); // reset before starting again
+      alarmTriggered = false;
+
+      alertBox.innerText = "";
+      errorBox.innerText = "";
+      stopBtn.style.display = "none";
+
+      if (interval) clearInterval(interval);
+
+      interval = setInterval(async () => {
+        try {
+          const currentPrice = await getPrice(symbol);
+          priceDisplay.innerText = `💰 ${symbol} = $${currentPrice.toFixed(8)}`;
+
+          if (currentPrice < target && !alarmTriggered) {
+            alarmTriggered = true;
+            document.getElementById("alertBox").innerText = `🚨 ALERT: ${symbol} dropped below $${target}`;
+            document.getElementById("alertSound").play();
+            document.getElementById("stopBtn").style.display = "inline-block";
+          }
+
+        } catch (err) {
+          errorBox.innerText = "❌ Error: " + err.message;
+          priceDisplay.innerText = "No price";
+          stopAlarm();
+        }
+      }, 2000);
+    }
+
+    function stopAlarm() {
+      if (interval) {
+        clearInterval(interval);
+        interval = null;
+      }
+
+      document.getElementById("alertSound").pause();
+      document.getElementById("alertSound").currentTime = 0;
+      document.getElementById("stopBtn").style.display = "none";
+      document.getElementById("alertBox").innerText = "";
+      document.getElementById("priceDisplay").innerText = "Stopped.";
+      alarmTriggered = false;
+    }
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Precision Trading Calculator with Live Prices</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- EmailJS SDK for real email sending -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <!-- Add FileSaver.js for file downloads -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <!-- Add docx library for Word document generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/7.8.2/docx.min.js"></script>
+</head>
+
+<body>
+    <!-- Login/Signup Page -->
+    <div id="loginPage" class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="login-logo">
+                    <i class="fas fa-calculator"></i>
+                    <div>
+                        <div class="login-title">Precision Trading Calculator</div>
+                        <div class="login-subtitle">Professional Trading Dashboard</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Login Form -->
+            <div id="loginForm">
+                <form class="login-form" onsubmit="handleLogin(event)">
+                    <div id="loginError" class="error-message">
+                        <i class="fas fa-exclamation-circle"></i>
+                        Invalid username or password
+                    </div>
+
+                    <div class="login-input-group">
+                        <input type="text" id="username" class="login-input" placeholder="Username" required
+                            autocomplete="username">
+                        <i class="fas fa-user login-input-icon"></i>
+                    </div>
+
+                    <div class="login-input-group">
+                        <input type="password" id="password" class="login-input" placeholder="Password" required
+                            autocomplete="current-password">
+                        <i class="fas fa-eye-slash login-input-icon password-toggle" onclick="togglePassword()"></i>
+                    </div>
+
+                    <button type="submit" class="login-button" id="loginButton">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Access Dashboard
+                    </button>
+                </form>
+
+                <div class="divider">
+                    <span>Don't have an account?</span>
+                </div>
+
+                <div class="login-links">
+                    <a class="login-link" onclick="showSignupForm()">Create New Account</a>
+                </div>
+            </div>
+
+            <!-- Signup Form -->
+            <div id="signupForm" style="display: none;">
+                <form class="signup-form" onsubmit="handleSignup(event)">
+                    <div id="signupError" class="error-message"></div>
+                    <div id="signupSuccess" class="success-message"></div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="signupFullName">
+                            <i class="fas fa-user"></i>
+                            Full Name
+                        </label>
+                        <input type="text" id="signupFullName" class="form-input" placeholder="Enter your full name"
+                            required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="signupUsername">
+                            <i class="fas fa-at"></i>
+                            Username
+                        </label>
+                        <input type="text" id="signupUsername" class="form-input" placeholder="Choose a username"
+                            required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="signupEmail">
+                            <i class="fas fa-envelope"></i>
+                            Email Address
+                        </label>
+                        <input type="email" id="signupEmail" class="form-input" placeholder="Enter your email" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="signupPassword">
+                            <i class="fas fa-lock"></i>
+                            Password
+                        </label>
+                        <input type="password" id="signupPassword" class="form-input" placeholder="Create a password"
+                            required oninput="validatePassword()" autocomplete="new-password">
+
+                        <div class="password-requirements">
+                            <h4>Password Requirements:</h4>
+                            <ul>
+                                <li id="req-length" class="requirement-not-met">At least 8 characters long</li>
+                                <li id="req-uppercase" class="requirement-not-met">Contains uppercase letter</li>
+                                <li id="req-lowercase" class="requirement-not-met">Contains lowercase letter</li>
+                                <li id="req-number" class="requirement-not-met">Contains at least one number</li>
+                                <li id="req-special" class="requirement-not-met">Contains special character (@, #, $, %,
+                                    etc.)</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="signupConfirmPassword">
+                            <i class="fas fa-lock"></i>
+                            Confirm Password
+                        </label>
+                        <input type="password" id="signupConfirmPassword" class="form-input"
+                            placeholder="Confirm your password" required oninput="validatePassword()"
+                            autocomplete="new-password">
+                    </div>
+
+                    <!-- EmailJS Configuration Section -->
+                    <div class="emailjs-section">
+                        <div class="emailjs-header">
+                            <div class="emailjs-title">
+                                <i class="fas fa-envelope"></i>
+                                Email Notifications (Optional)
+                            </div>
+                            <div class="toggle-switch" id="emailjsToggle" onclick="toggleEmailJSSection()"></div>
+                        </div>
+                        <div class="emailjs-content" id="emailjsContent">
+                            <div class="emailjs-info">
+                                <strong>Setup Email Notifications:</strong> Configure EmailJS to receive price alerts
+                                and trade notifications.
+                                <br><a href="https://www.emailjs.com/" target="_blank">Get your EmailJS credentials
+                                    here</a>
+                            </div>
+                            <div class="emailjs-grid">
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-key"></i>
+                                        Public Key
+                                    </label>
+                                    <input type="text" id="signupPublicKey" class="form-input"
+                                        placeholder="Your EmailJS Public Key">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-cog"></i>
+                                        Service ID
+                                    </label>
+                                    <input type="text" id="signupServiceId" class="form-input"
+                                        placeholder="Your EmailJS Service ID">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="fas fa-file-alt"></i>
+                                    Template ID
+                                </label>
+                                <input type="text" id="signupTemplateId" class="form-input"
+                                    placeholder="Your EmailJS Template ID">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="login-button" id="signupBtn" disabled>
+                        <i class="fas fa-user-plus"></i>
+                        Create Account
+                    </button>
+                </form>
+
+                <div class="divider">
+                    <span>Already have an account?</span>
+                </div>
+
+                <div class="login-links">
+                    <a class="login-link" onclick="showLoginForm()">Sign In Instead</a>
+                </div>
+            </div>
+
+            <div class="login-features">
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <span>Advanced stop loss & risk calculations with trading fees</span>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <span>Complete trade history & analytics with INR conversion</span>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <span>Real-time currency conversion with fees tracking</span>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                    <span>Performance analytics & fee optimization</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div class="main-dashboard" id="mainDashboard">
+        <!-- Header with user info -->
+        <div class="header">
+            <div class="user-info">
+                <div class="user-avatar-container" onclick="openAvatarModal()">
+                    <div id="userAvatar" class="user-avatar">SB</div>
+                    <div class="avatar-edit-icon">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                </div>
+                <div class="user-details">
+                    <h3 id="userName">Soumen Bhandari</h3>
+                    <p id="userEmail">Professional Trader</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="toggle-container">
+                    <span>Dark Mode</span>
+                    <div class="toggle-switch" onclick="toggleTheme()"></div>
+                </div>
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </button>
+            </div>
+        </div>
+
+        <div class="logo">
+            <i class="fas fa-calculator logo-icon"></i>
+            <h1>Precision Trading Calculator</h1>
+        </div>
+
+        <div class="dashboard-container">
+            <div class="main-content">
+                <!-- Main Navigation Tabs -->
+                <div class="main-tabs">
+                    <button class="main-tab active" onclick="switchMainTab('stop-loss-calculator')">
+                        <i class="fas fa-chart-line"></i> Calculator
+                    </button>
+                    <button class="main-tab" onclick="switchMainTab('portfolio-tracker')">
+                        <i class="fas fa-briefcase"></i> Portfolio
+                    </button>
+                    <button class="main-tab" onclick="switchMainTab('trade-journal')">
+                        <i class="fas fa-book"></i> Journal
+                    </button>
+                    <button class="main-tab" onclick="switchMainTab('risk-management')">
+                        <i class="fas fa-shield-alt"></i> Risk
+                    </button>
+                    <button class="main-tab" onclick="switchMainTab('price-alerts')">
+                        <i class="fas fa-bell"></i> Alerts
+                    </button>
+                    <button class="main-tab" onclick="switchMainTab('trading-analytics')">
+                        <i class="fas fa-chart-pie"></i> Analytics
+                    </button>
+                </div>
+
+                <!-- Stop Loss Calculator Tab -->
+                <div class="main-tab-content active" id="stop-loss-calculator">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <i class="fas fa-chart-line calculator-icon"></i>
+                                <span>Stop Loss Calculator with Trading Fees</span>
+                            </div>
+                        </div>
+
+                        <div class="tabs">
+                            <div class="tab active" onclick="switchTab('trade-calculator')">Trade Calculator</div>
+                            <div class="tab" onclick="switchTab('history')">Trade History</div>
+                        </div>
+
+                        <!-- Trade Calculator Tab -->
+                        <div class="tab-content active" id="trade-calculator">
+                            <div class="input-group">
+                                <div class="input-label">
+                                    <i class="fas fa-coins"></i>
+                                    <span>Asset/Symbol</span>
+                                    <div class="tooltip">
+                                        <div class="info-icon">i</div>
+                                        <span class="tooltip-text">Enter the trading symbol (e.g., BTCUSDT,
+                                            ETHUSDT)</span>
+                                    </div>
+                                </div>
+                                <div class="symbol-input-container">
+                                    <input type="text" id="assetName" class="input-field"
+                                        placeholder="e.g., BTCUSDT, ETHUSDT">
+                                    <button class="btn btn-secondary" onclick="fetchCurrentPrice()">
+                                        <i class="fas fa-sync"></i> Get Price
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="live-price-container" id="livePriceContainer" style="display: none;">
+                                <div class="live-price-label">Live Price:</div>
+                                <div class="live-price-value" id="livePriceValue">$--</div>
+                                <div class="price-change-indicator" id="priceChangeIndicator">--</div>
+                            </div>
+
+                            <div class="price-history-chart">
+                                <canvas id="priceHistoryChart"></canvas>
+                            </div>
+
+                            <div class="input-group">
+                                <div class="input-label">
+                                    <i class="fas fa-tag"></i>
+                                    <span>Entry Price ($)</span>
+                                    <div class="tooltip">
+                                        <div class="info-icon">i</div>
+                                        <span class="tooltip-text">The price at which you entered the trade</span>
+                                    </div>
+                                </div>
+                                <input type="number" id="entry" class="input-field" step="any"
+                                    placeholder="Enter entry price" oninput="calc()">
+                                <div class="decimal-info">Supports up to 10 decimal places</div>
+                            </div>
+
+                            <div class="row">
+                                <div class="input-group">
+                                    <div class="input-label">
+                                        <i class="fas fa-wallet"></i>
+                                        <span>Original Amount ($)</span>
+                                    </div>
+                                    <input type="number" id="original" class="input-field" value="5.88" step="0.01"
+                                        oninput="updateLeverage()">
+                                    <div class="slider-container">
+                                        <input type="range" min="1" max="1000" value="5.88" step="1" class="slider"
+                                            id="originalSlider" oninput="updateOriginalFromSlider()">
+                                    </div>
+                                </div>
+                                <div class="input-group">
+                                    <div class="input-label">
+                                        <i class="fas fa-bolt"></i>
+                                        <span>Leverage (×)</span>
+                                    </div>
+                                    <input type="number" id="leverageX" class="input-field" value="20" step="1" min="1"
+                                        max="100" oninput="updateLeverage()">
+                                    <div class="slider-container">
+                                        <input type="range" min="1" max="50" value="20" step="1" class="slider"
+                                            id="leverageSlider" oninput="updateLeverageFromSlider()">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <div class="input-label">
+                                    <i class="fas fa-sack-dollar"></i>
+                                    <span>Position Size ($)</span>
+                                    <div class="tooltip">
+                                        <div class="info-icon">i</div>
+                                        <span class="tooltip-text">Total position size (Original Amount ×
+                                            Leverage)</span>
+                                    </div>
+                                </div>
+                                <input type="number" id="leverage" class="input-field" readonly>
+                            </div>
+
+                            <div class="input-group">
+                                <div class="input-label">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <span>Risk ($)</span>
+                                    <div class="tooltip">
+                                        <div class="info-icon">i</div>
+                                        <span class="tooltip-text">The amount you're willing to risk on this
+                                            trade</span>
+                                    </div>
+                                </div>
+                                <input type="number" id="risk" class="input-field" value=".592" step="0.01"
+                                    oninput="calc()">
+                                <div class="slider-container">
+                                    <input type="range" min="1" max="100" value=".592" step="1" class="slider"
+                                        id="riskSlider" oninput="updateRiskFromSlider()">
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <div class="input-label">
+                                    <i class="fas fa-bullseye"></i>
+                                    <span>Target Price ($)</span>
+                                    <div class="tooltip">
+                                        <div class="info-icon">i</div>
+                                        <span class="tooltip-text">Your target price for taking profits</span>
+                                    </div>
+                                </div>
+                                <input type="number" id="target" class="input-field" step="any"
+                                    placeholder="Enter target price" oninput="calc()">
+                                <div class="decimal-info">Supports up to 10 decimal places</div>
+                            </div>
+
+                            <div class="position-toggle">
+                                <button id="longBtn" class="position-btn active" onclick="setPosition('long')">
+                                    <i class="fas fa-arrow-up"></i> Long
+                                </button>
+                                <button id="shortBtn" class="position-btn" onclick="setPosition('short')">
+                                    <i class="fas fa-arrow-down"></i> Short
+                                </button>
+                            </div>
+
+                            <div class="result-container">
+                                <div class="result-item">
+                                    <div class="result-label">Stop Loss Value</div>
+                                    <div id="slValue" class="result-value">$--</div>
+                                </div>
+                                <div class="result-item">
+                                    <div class="result-label">Stop Loss Price</div>
+                                    <div id="slPrice" class="result-value">$--</div>
+                                </div>
+                            </div>
+
+                            <div class="trading-fees-container">
+                                <div class="result-item">
+                                    <div class="result-label">Maker Fee (0.02%)</div>
+                                    <div id="makerFee" class="result-value">$--</div>
+                                    <div id="makerFeeInr" class="inr-value">₹--</div>
+                                </div>
+                                <div class="result-item">
+                                    <div class="result-label">Taker Fee (0.05%)</div>
+                                    <div id="takerFee" class="result-value">$--</div>
+                                    <div id="takerFeeInr" class="inr-value">₹--</div>
+                                </div>
+                            </div>
+
+                            <div class="profit-loss-container">
+                                <div class="result-item">
+                                    <div class="result-label">Potential Profit</div>
+                                    <div id="profitValue" class="result-value">$--</div>
+                                    <div id="profitValueInr" class="inr-value">₹--</div>
+                                </div>
+                                <div class="result-item">
+                                    <div class="result-label">Risk/Reward Ratio</div>
+                                    <div id="rrRatio" class="result-value">--</div>
+                                </div>
+                            </div>
+
+                            <div class="btn-group">
+                                <button class="btn btn-secondary" onclick="resetCalculator()">
+                                    <i class="fas fa-redo"></i> Reset
+                                </button>
+                                <button class="btn btn-primary" onclick="showTradeSummary()">
+                                    <i class="fas fa-file-alt"></i> Summary
+                                </button>
+                                <button class="btn btn-success" onclick="saveTrade()">
+                                    <i class="fas fa-save"></i> Save Trade
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Trade History Tab -->
+                        <div class="tab-content" id="history">
+                            <div class="input-group">
+                                <div class="input-label">
+                                    <i class="fas fa-filter"></i>
+                                    <span>Filter by Position</span>
+                                </div>
+                                <select id="historyFilter" class="input-field" onchange="filterHistory()">
+                                    <option value="all">All Trades</option>
+                                    <option value="long">Long Positions</option>
+                                    <option value="short">Short Positions</option>
+                                </select>
+                            </div>
+
+                            <div class="history-table-container">
+                                <table class="history-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Time</th>
+                                            <th>Asset</th>
+                                            <th>Position</th>
+                                            <th>Entry</th>
+                                            <th>Target</th>
+                                            <th>Stop Loss</th>
+                                            <th>Fee Type</th>
+                                            <th>Outcome</th>
+                                            <th>P/L</th>
+                                            <th>P/L (₹)</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="historyTableBody">
+                                        <!-- History will be populated here -->
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="history-actions">
+                                <button class="btn btn-secondary" onclick="clearHistory()">
+                                    <i class="fas fa-trash"></i> Clear History
+                                </button>
+                                <button class="btn btn-primary" onclick="exportHistory()">
+                                    <i class="fas fa-download"></i> Export CSV
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Portfolio Tracker Tab -->
+                <div class="main-tab-content" id="portfolio-tracker">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <i class="fas fa-briefcase calculator-icon"></i>
+                                <span>Portfolio Tracker</span>
+                            </div>
+                        </div>
+
+                        <div class="portfolio-grid">
+                            <div class="portfolio-summary">
+                                <div class="portfolio-value" id="portfolioValue">$0.00</div>
+                                <div class="portfolio-change" id="portfolioChange">+$0.00 (0.00%)</div>
+                                <p>Total Portfolio Value</p>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <div class="input-label">
+                                <i class="fas fa-plus"></i>
+                                <span>Add Asset to Portfolio</span>
+                            </div>
+                            <div class="row">
+                                <div>
+                                    <input type="text" id="portfolioAsset" class="input-field"
+                                        placeholder="Asset Symbol (e.g., BTC)">
+                                </div>
+                                <div>
+                                    <input type="number" id="portfolioQuantity" class="input-field"
+                                        placeholder="Quantity" step="any">
+                                </div>
+                                <div>
+                                    <input type="number" id="portfolioPrice" class="input-field" placeholder="Avg Price"
+                                        step="any">
+                                </div>
+                                <div>
+                                    <button class="btn btn-primary" onclick="addAssetToPortfolio()">
+                                        <i class="fas fa-plus"></i> Add
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="asset-list" id="assetList">
+                            <div class="no-notes" style="text-align: center; padding: 40px;">
+                                <i class="fas fa-briefcase"
+                                    style="font-size: 48px; color: #ccc; margin-bottom: 15px;"></i>
+                                <p>No assets in portfolio yet. Add your first asset!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trade Journal Tab -->
+                <div class="main-tab-content" id="trade-journal">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <i class="fas fa-book calculator-icon"></i>
+                                <span>Trade Journal with Screenshots</span>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <div class="input-label">
+                                <i class="fas fa-coins"></i>
+                                <span>Trade Symbol</span>
+                            </div>
+                            <input type="text" id="journalSymbol" class="input-field" placeholder="e.g., BTC/USD">
+                        </div>
+
+                        <div class="input-group">
+                            <div class="input-label">
+                                <i class="fas fa-image"></i>
+                                <span>Chart Screenshot</span>
+                            </div>
+                            <div class="screenshot-upload"
+                                onclick="document.getElementById('screenshotUpload').click()">
+                                <i class="fas fa-camera"></i>
+                                <h4>Upload Chart Screenshot</h4>
+                                <p>Click to select an image file</p>
+                                <input type="file" id="screenshotUpload" accept="image/*" style="display: none;"
+                                    onchange="handleScreenshotUpload(event)">
+                            </div>
+                            <div id="screenshotPreview" style="display: none; margin-top: 15px;">
+                                <img id="screenshotImage" class="screenshot-preview" alt="Chart Screenshot">
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <div class="input-label">
+                                <i class="fas fa-edit"></i>
+                                <span>Trade Analysis & Reasoning</span>
+                            </div>
+                            <textarea id="journalAnalysis" class="input-field" rows="4"
+                                placeholder="Describe your trade setup, reasoning, and analysis..."></textarea>
+                        </div>
+
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="saveJournalEntry()">
+                                <i class="fas fa-save"></i> Save Journal Entry
+                            </button>
+                            <button class="export-word-btn" onclick="exportJournalToWord()">
+                                <i class="fas fa-file-word"></i> Export to Word
+                            </button>
+                        </div>
+
+                        <div class="section-title" style="margin-top: 30px;">
+                            <span>Journal Entries</span>
+                        </div>
+
+                        <div id="journalEntries">
+                            <div class="no-notes" style="text-align: center; padding: 40px;">
+                                <i class="fas fa-book" style="font-size: 48px; color: #ccc; margin-bottom: 15px;"></i>
+                                <p>No journal entries yet. Add your first trade analysis!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Risk Management Tab -->
+                <div class="main-tab-content" id="risk-management">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <i class="fas fa-shield-alt calculator-icon"></i>
+                                <span>Risk Management Dashboard</span>
+                            </div>
+                        </div>
+
+                        <div class="risk-metrics">
+                            <div class="risk-metric">
+                                <div class="risk-metric-icon" style="color: var(--primary);">
+                                    <i class="fas fa-wallet"></i>
+                                </div>
+                                <div class="risk-metric-value" id="accountBalance">$1,000.00</div>
+                                <div class="risk-metric-label">Account Balance</div>
+                            </div>
+                            <div class="risk-metric">
+                                <div class="risk-metric-icon" style="color: var(--warning);">
+                                    <i class="fas fa-percentage"></i>
+                                </div>
+                                <div class="risk-metric-value" id="riskPerTrade">2%</div>
+                                <div class="risk-metric-label">Risk Per Trade</div>
+                            </div>
+                            <div class="risk-metric">
+                                <div class="risk-metric-icon" style="color: var(--danger);">
+                                    <i class="fas fa-chart-line-down"></i>
+                                </div>
+                                <div class="risk-metric-value" id="maxDrawdown">-5.2%</div>
+                                <div class="risk-metric-label">Max Drawdown</div>
+                            </div>
+                            <div class="risk-metric">
+                                <div class="risk-metric-icon" style="color: var(--success);">
+                                    <i class="fas fa-dollar-sign"></i>
+                                </div>
+                                <div class="risk-metric-value" id="dailyRisk">$20.00</div>
+                                <div class="risk-metric-label">Daily Risk Limit</div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="input-group">
+                                <div class="input-label">
+                                    <i class="fas fa-wallet"></i>
+                                    <span>Account Balance ($)</span>
+                                </div>
+                                <input type="number" id="riskAccountBalance" class="input-field" value="1000"
+                                    step="0.01" oninput="updateRiskMetrics()">
+                            </div>
+                            <div class="input-group">
+                                <div class="input-label">
+                                    <i class="fas fa-percentage"></i>
+                                    <span>Risk Per Trade (%)</span>
+                                </div>
+                                <input type="number" id="riskPerTradePercent" class="input-field" value="2" step="0.1"
+                                    min="0.1" max="10" oninput="updateRiskMetrics()">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="input-group">
+                                <div class="input-label">
+                                    <i class="fas fa-calendar-day"></i>
+                                    <span>Daily Risk Limit (%)</span>
+                                </div>
+                                <input type="number" id="dailyRiskPercent" class="input-field" value="5" step="0.1"
+                                    min="1" max="20" oninput="updateRiskMetrics()">
+                            </div>
+                            <div class="input-group">
+                                <div class="input-label">
+                                    <i class="fas fa-chart-line-down"></i>
+                                    <span>Max Drawdown Limit (%)</span>
+                                </div>
+                                <input type="number" id="maxDrawdownLimit" class="input-field" value="15" step="0.1"
+                                    min="5" max="50" oninput="updateRiskMetrics()">
+                            </div>
+                        </div>
+
+                        <div id="riskAlert" class="risk-safe">
+                            <i class="fas fa-check-circle"></i>
+                            Risk levels are within safe limits
+                        </div>
+
+                        <div class="section-title">
+                            <span>Position Size Calculator</span>
+                        </div>
+
+                        <div class="row">
+                            <div class="input-group">
+                                <div class="input-label">
+                                    <i class="fas fa-tag"></i>
+                                    <span>Entry Price ($)</span>
+                                </div>
+                                <input type="number" id="riskEntryPrice" class="input-field" step="any"
+                                    oninput="calculatePositionSize()">
+                            </div>
+                            <div class="input-group">
+                                <div class="input-label">
+                                    <i class="fas fa-stop-circle"></i>
+                                    <span>Stop Loss Price ($)</span>
+                                </div>
+                                <input type="number" id="riskStopPrice" class="input-field" step="any"
+                                    oninput="calculatePositionSize()">
+                            </div>
+                        </div>
+
+                        <div class="result-container">
+                            <div class="result-item">
+                                <div class="result-label">Recommended Position Size</div>
+                                <div id="recommendedPosition" class="result-value">$--</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Risk Amount</div>
+                                <div id="riskAmount" class="result-value">$--</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Price Alerts Tab -->
+                <div class="main-tab-content" id="price-alerts">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <i class="fas fa-bell calculator-icon"></i>
+                                <span>Enhanced Price Alerts System</span>
+                            </div>
+                        </div>
+
+                        <!-- EmailJS Configuration Management -->
+                        <div class="section-title">
+                            <span>Email Configuration</span>
+                            <button class="btn btn-primary" onclick="showAddEmailJSModal()"
+                                style="padding: 5px 10px; font-size: 12px;">
+                                <i class="fas fa-plus"></i> Add EmailJS Config
+                            </button>
+                        </div>
+
+                        <div id="emailjsConfigList">
+                            <div class="no-notes" style="text-align: center; padding: 40px;">
+                                <i class="fas fa-envelope"
+                                    style="font-size: 48px; color: #ccc; margin-bottom: 15px;"></i>
+                                <p>No EmailJS configurations found. Add one to enable email notifications.</p>
+                            </div>
+                        </div>
+
+                        <!-- API Status Display -->
+                        <div class="api-status-container">
+                            <div class="api-status-title">
+                                <i class="fas fa-server"></i> API Status Monitor
+                            </div>
+                            <div class="api-status-list" id="apiStatusList">
+                                <div class="api-status-item">
+                                    <div class="api-status-indicator checking" id="binanceStatus"></div>
+                                    <span>Binance API</span>
+                                </div>
+                                <div class="api-status-item">
+                                    <div class="api-status-indicator checking" id="coinbaseStatus"></div>
+                                    <span>Coinbase API</span>
+                                </div>
+                                <div class="api-status-item">
+                                    <div class="api-status-indicator checking" id="krakenStatus"></div>
+                                    <span>Kraken API</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="input-group">
+                                <div class="input-label">
+                                    <i class="fas fa-coins"></i>
+                                    <span>Asset Symbol</span>
+                                </div>
+                                <input type="text" id="alertSymbol" class="input-field" placeholder="e.g., BTCUSDT">
+                            </div>
+                            <div class="input-group">
+                                <div class="input-label">
+                                    <i class="fas fa-arrows-alt-v"></i>
+                                    <span>Condition</span>
+                                </div>
+                                <select id="alertCondition" class="input-field">
+                                    <option value="above">Price Above</option>
+                                    <option value="below">Price Below</option>
+                                    <option value="change">% Change</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="input-group">
+                                <div class="input-label">
+                                    <i class="fas fa-dollar-sign"></i>
+                                    <span>Target Price/Percentage</span>
+                                </div>
+                                <input type="number" id="alertPrice" class="input-field" step="any"
+                                    placeholder="Enter price or percentage">
+                            </div>
+                            <div class="input-group">
+                                <div class="input-label">
+                                    <i class="fas fa-comment"></i>
+                                    <span>Note (Optional)</span>
+                                </div>
+                                <input type="text" id="alertNote" class="input-field" placeholder="Alert description">
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary" onclick="createPriceAlert()">
+                            <i class="fas fa-plus"></i> Create Alert
+                        </button>
+
+                        <div class="section-title" style="margin-top: 30px;">
+                            <span>Active Alerts</span>
+                            <button class="btn btn-secondary" onclick="clearAllAlerts()"
+                                style="padding: 5px 10px; font-size: 12px;">
+                                <i class="fas fa-trash"></i> Clear All
+                            </button>
+                        </div>
+
+                        <div id="alertsList">
+                            <div class="no-notes" style="text-align: center; padding: 40px;">
+                                <i class="fas fa-bell" style="font-size: 48px; color: #ccc; margin-bottom: 15px;"></i>
+                                <p>No price alerts set. Create your first alert!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trading Analytics Tab -->
+                <div class="main-tab-content" id="trading-analytics">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <i class="fas fa-chart-pie calculator-icon"></i>
+                                <span>Advanced Trading Analytics</span>
+                            </div>
+                        </div>
+
+                        <div class="total-pl-container">
+                            <div class="total-pl-label">Total P/L</div>
+                            <div id="totalPL" class="total-pl-value">$0.00</div>
+                            <div id="totalPLInr" class="inr-value">₹0.00</div>
+                        </div>
+
+                        <div class="analytics-grid">
+                            <div class="analytics-card">
+                                <div class="analytics-title">Sharpe Ratio</div>
+                                <div class="analytics-value" id="sharpeRatio">0.00</div>
+                                <div class="analytics-change" id="sharpeChange">Risk-adjusted returns</div>
+                            </div>
+                            <div class="analytics-card">
+                                <div class="analytics-title">Max Consecutive Wins</div>
+                                <div class="analytics-value" id="maxWinStreak">0</div>
+                                <div class="analytics-change">Best winning streak</div>
+                            </div>
+                            <div class="analytics-card">
+                                <div class="analytics-title">Max Consecutive Losses</div>
+                                <div class="analytics-value" id="maxLossStreak">0</div>
+                                <div class="analytics-change">Worst losing streak</div>
+                            </div>
+                            <div class="analytics-card">
+                                <div class="analytics-title">Best Performing Asset</div>
+                                <div class="analytics-value" id="bestAsset">--</div>
+                                <div class="analytics-change" id="bestAssetProfit">$0.00</div>
+                            </div>
+                        </div>
+
+                        <div class="chart-container">
+                            <canvas id="plChart"></canvas>
+                        </div>
+
+                        <div class="section-title">
+                            Trade Statistics
+                            <button class="edit-btn" onclick="openEditModal()">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                        </div>
+
+                        <div class="row">
+                            <div class="input-group">
+                                <div class="input-label">
+                                    <i class="fas fa-percentage"></i>
+                                    <span>Win Rate</span>
+                                </div>
+                                <input type="text" id="winRate" class="input-field" value="0%" readonly>
+                            </div>
+
+                            <div class="input-group">
+                                <div class="input-label">
+                                    <i class="fas fa-chart-line"></i>
+                                    <span>Avg. Profit</span>
+                                </div>
+                                <input type="text" id="avgProfit" class="input-field" value="$0.00" readonly>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="input-group">
+                                <div class="input-label">
+                                    <i class="fas fa-chart-bar"></i>
+                                    <span>Avg. Loss</span>
+                                </div>
+                                <input type="text" id="avgLoss" class="input-field" value="$0.00" readonly>
+                            </div>
+
+                            <div class="input-group">
+                                <div class="input-label">
+                                    <i class="fas fa-balance-scale"></i>
+                                    <span>Total Trades</span>
+                                </div>
+                                <input type="text" id="totalTrades" class="input-field" value="0" readonly>
+                            </div>
+                        </div>
+
+                        <div class="win-loss-container">
+                            <div class="win-counter">
+                                <div class="win-loss-label">Total Wins</div>
+                                <div id="totalWins" class="win-loss-value">0</div>
+                            </div>
+                            <div class="loss-counter">
+                                <div class="win-loss-label">Total Losses</div>
+                                <div id="totalLosses" class="win-loss-value">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Currency Converter Sidebar -->
+            <div class="currency-converter-sidebar">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-exchange-alt calculator-icon"></i>
+                            <span>Currency Converter</span>
+                        </div>
+                    </div>
+
+                    <div class="currency-select">
+                        <select id="fromCurrency" class="input-field" onchange="convertCurrency()">
+                            <option value="USD" selected>USD</option>
+                            <option value="EUR">EUR</option>
+                            <option value="GBP">GBP</option>
+                            <option value="JPY">JPY</option>
+                            <option value="CAD">CAD</option>
+                            <option value="AUD">AUD</option>
+                            <option value="CHF">CHF</option>
+                            <option value="CNY">CNY</option>
+                            <option value="INR">INR</option>
+                        </select>
+
+                        <i class="fas fa-exchange-alt"></i>
+
+                        <select id="toCurrency" class="input-field" onchange="convertCurrency()">
+                            <option value="EUR">EUR</option>
+                            <option value="USD">USD</option>
+                            <option value="GBP">GBP</option>
+                            <option value="JPY">JPY</option>
+                            <option value="CAD">CAD</option>
+                            <option value="AUD">AUD</option>
+                            <option value="CHF">CHF</option>
+                            <option value="CNY">CNY</option>
+                            <option value="INR" selected>INR</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <div class="input-label">
+                            <i class="fas fa-money-bill-wave"></i>
+                            <span>Enter Amount</span>
+                        </div>
+                        <input type="number" id="amount" class="input-field" placeholder="e.g., 5.88"
+                            oninput="convertCurrency()">
+                    </div>
+
+                    <div class="input-group">
+                        <div class="input-label">
+                            <i class="fas fa-globe"></i>
+                            <span id="rateLabel">Exchange Rate</span>
+                        </div>
+                        <input type="number" id="rate" class="input-field" value="85" step="0.01"
+                            oninput="convertCurrency()">
+                    </div>
+
+                    <div id="convertResult" class="conversion-result">
+                        <div id="conversionText">Enter amount to convert</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trade Outcome Modal -->
+    <div class="modal" id="tradeOutcomeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Trade Outcome</h3>
+                <button class="close-modal" onclick="closeTradeOutcomeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>How did this trade turn out?</p>
+                <div class="outcome-buttons">
+                    <button class="outcome-btn win" onclick="selectOutcome('win')">
+                        <i class="fas fa-check-circle"></i> Win
+                    </button>
+                    <button class="outcome-btn loss" onclick="selectOutcome('loss')">
+                        <i class="fas fa-times-circle"></i> Loss
+                    </button>
+                    <button class="outcome-btn pending" onclick="selectOutcome('pending')">
+                        <i class="fas fa-clock"></i> Pending
+                    </button>
+                </div>
+
+                <!-- Fee Selection -->
+                <div class="fee-selection" id="feeSelection" style="display: none;">
+                    <h4>Choose Fee Type</h4>
+                    <div class="fee-buttons">
+                        <button class="fee-btn maker" onclick="selectFeeType('maker')">
+                            <i class="fas fa-clock"></i> Maker (0.02%)
+                        </button>
+                        <button class="fee-btn taker" onclick="selectFeeType('taker')">
+                            <i class="fas fa-bolt"></i> Taker (0.05%)
+                        </button>
+                    </div>
+                    <div class="fee-comparison" id="feeComparison">
+                        <div class="fee-comparison-item maker">
+                            <div class="fee-comparison-label">With Maker Fee</div>
+                            <div class="fee-comparison-value" id="makerProfitPreview">$--</div>
+                        </div>
+                        <div class="fee-comparison-item taker">
+                            <div class="fee-comparison-label">With Taker Fee</div>
+                            <div class="fee-comparison-value" id="takerProfitPreview">$--</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="outcomeInputs" style="display: none;">
+                    <div class="input-group">
+                        <div class="input-label">
+                            <i class="fas fa-dollar-sign"></i>
+                            <span id="outcomeInputLabel">Exit Price ($)</span>
+                        </div>
+                        <input type="number" id="outcomePrice" class="input-field" step="any"
+                            placeholder="Enter exit price" oninput="updateFeeComparison()">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeTradeOutcomeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="finalizeTradeOutcome()">
+                    <i class="fas fa-save"></i> Save Trade
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Performance Modal -->
+    <div class="modal" id="editPerformanceModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Performance Statistics</h3>
+                <button class="close-modal" onclick="closeEditModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <div class="input-label">
+                        <i class="fas fa-percentage"></i>
+                        <span>Win Rate (%)</span>
+                    </div>
+                    <input type="number" id="editWinRate" class="editable-field" step="0.1" min="0" max="100">
+                </div>
+
+                <div class="input-group">
+                    <div class="input-label">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Average Profit ($)</span>
+                    </div>
+                    <input type="number" id="editAvgProfit" class="editable-field" step="0.01">
+                </div>
+
+                <div class="input-group">
+                    <div class="input-label">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Average Loss ($)</span>
+                    </div>
+                    <input type="number" id="editAvgLoss" class="editable-field" step="0.01">
+                </div>
+
+                <div class="input-group">
+                    <div class="input-label">
+                        <i class="fas fa-trophy"></i>
+                        <span>Total Wins</span>
+                    </div>
+                    <input type="number" id="editTotalWins" class="editable-field" min="0">
+                </div>
+
+                <div class="input-group">
+                    <div class="input-label">
+                        <i class="fas fa-times-circle"></i>
+                        <span>Total Losses</span>
+                    </div>
+                    <input type="number" id="editTotalLosses" class="editable-field" min="0">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="savePerformanceEdits()">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Avatar Upload Modal -->
+    <div class="avatar-modal" id="avatarModal">
+        <div class="avatar-modal-content">
+            <div class="avatar-modal-header">
+                <h3 class="avatar-modal-title">Update Profile Picture</h3>
+                <button class="close-modal" onclick="closeAvatarModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="avatar-preview" id="avatarPreview"></div>
+
+                <div class="file-input-container">
+                    <button class="file-input-label">
+                        <i class="fas fa-upload"></i> Choose File
+                    </button>
+                    <input type="file" id="avatarUpload" class="file-input" accept="image/*"
+                        onchange="handleImageUpload(event)">
+                </div>
+
+                <p style="margin: 15px 0; font-size: 14px; color: #666;">
+                    Select an image from your computer. JPG, PNG, or GIF. Max 5MB.
+                </p>
+
+                <div class="avatar-options">
+                    <div class="avatar-option"
+                        style="background-image: url('data:image/svg+xml,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><rect width=%27100%27 height=%27100%27 fill=%27%232962ff%27/><circle cx=%2750%27 cy=%2740%27 r=%2720%27 fill=%27%23fff%27/><path d=%27M20,85 L80,85 C65,70 35,70 20,85 Z%27 fill=%27%23fff%27/></svg>')"
+                        onclick="selectDefaultAvatar('default1')"></div>
+                    <div class="avatar-option"
+                        style="background-image: url('data:image/svg+xml,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><rect width=%27100%27 height=%27100%27 fill=%27%23ff6d00%27/><circle cx=%2750%27 cy=%2740%27 r=%2720%27 fill=%27%23fff%27/><path d=%27M20,85 L80,85 C65,70 35,70 20,85 Z%27 fill=%27%23fff%27/></svg>')"
+                        onclick="selectDefaultAvatar('default2')"></div>
+                    <div class="avatar-option"
+                        style="background-image: url('data:image/svg+xml,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><rect width=%27100%27 height=%27100%27 fill=%27%2300c853%27/><circle cx=%2750%27 cy=%2740%27 r=%2720%27 fill=%27%23fff%27/><path d=%27M20,85 L80,85 C65,70 35,70 20,85 Z%27 fill=%27%23fff%27/></svg>')"
+                        onclick="selectDefaultAvatar('default3')"></div>
+                    <div class="avatar-option upload-option" onclick="document.getElementById('avatarUpload').click()">
+                        <i class="fas fa-plus upload-icon"></i>
+                        <span>Upload</span>
+                    </div>
+                </div>
+            </div>
+            <div class="avatar-modal-footer">
+                <button class="btn btn-secondary" onclick="closeAvatarModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveAvatar()">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- EmailJS Configuration Modal -->
+    <div class="modal" id="emailjsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="emailjsModalTitle">Add EmailJS Configuration</h3>
+                <button class="close-modal" onclick="closeEmailJSModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="emailjs-info">
+                    <strong>Get your EmailJS credentials:</strong> Visit <a href="https://www.emailjs.com/"
+                        target="_blank">EmailJS.com</a> to create an account and get your credentials.
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-tag"></i>
+                        Configuration Name
+                    </label>
+                    <input type="text" id="emailjsConfigName" class="form-input"
+                        placeholder="e.g., Personal Email, Work Email">
+                </div>
+
+                <div class="emailjs-grid">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-key"></i>
+                            Public Key
+                        </label>
+                        <input type="text" id="emailjsPublicKey" class="form-input"
+                            placeholder="Your EmailJS Public Key">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-cog"></i>
+                            Service ID
+                        </label>
+                        <input type="text" id="emailjsServiceId" class="form-input"
+                            placeholder="Your EmailJS Service ID">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-file-alt"></i>
+                        Template ID
+                    </label>
+                    <input type="text" id="emailjsTemplateId" class="form-input" placeholder="Your EmailJS Template ID">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeEmailJSModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="testEmailJSConfig()">
+                    <i class="fas fa-paper-plane"></i> Test Email
+                </button>
+                <button class="btn btn-success" onclick="saveEmailJSConfig()">
+                    <i class="fas fa-save"></i> Save Configuration
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Email Notification Modal -->
+    <div class="email-modal" id="emailModal">
+        <div class="email-modal-content">
+            <div class="email-header">
+                <div class="email-icon">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <div>
+                    <div class="email-title">Email Alert Sent!</div>
+                </div>
+            </div>
+            <div class="email-body">
+                <div class="email-field">
+                    <div class="email-field-label">To:</div>
+                    <div class="email-field-value" id="emailRecipient">user@example.com</div>
+                </div>
+                <div class="email-field">
+                    <div class="email-field-label">Subject:</div>
+                    <div class="email-field-value" id="emailSubject">Price Alert Triggered</div>
+                </div>
+                <div class="email-field">
+                    <div class="email-field-label">Message:</div>
+                    <div class="email-content" id="emailContent">
+                        <!-- Email content will be populated here -->
+                    </div>
+                </div>
+            </div>
+            <div class="email-footer">
+                <button class="email-close-btn" onclick="closeEmailModal()">
+                    <i class="fas fa-check"></i> Got it!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Sound -->
+    <audio id="alertSound" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3" type="audio/mpeg">
+        <source src="https://www.soundjay.com/misc/sounds/bell-ringing-05.wav" type="audio/wav">
+        <source
+            src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT"
+            type="audio/wav">
+    </audio>
+
+    <audio id="secondaryAlertSound" preload="auto">
+        <source src="https://www.soundjay.com/misc/sounds/bell-ringing-04.wav" type="audio/wav">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-interface-hint-notification-911.mp3" type="audio/mpeg">
+    </audio>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

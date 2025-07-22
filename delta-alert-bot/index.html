@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Delta Price Alert</title>
+    <style>
+        body {
+            background: #111;
+            color: #00ffcc;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding-top: 50px;
+        }
+
+        input,
+        button {
+            padding: 10px;
+            margin: 5px;
+            border-radius: 5px;
+            border: none;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #00ffcc;
+            cursor: pointer;
+        }
+
+        .alert {
+            color: red;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .price {
+            margin-top: 10px;
+            font-size: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>📈 Delta Exchange Price Alert Bot</h1>
+
+    <input type="text" id="symbolInput" placeholder="Symbol (e.g., BTCUSD)" />
+    <input type="number" step="0.00000001" id="targetPrice" placeholder="Alert if price below" />
+    <button onclick="startTracking()">Start Alert</button>
+    <button id="stopBtn" onclick="stopTracking()" style="display:none; background: red; color: white;">🛑 Stop</button>
+
+    <div class="price" id="priceDisplay">No price yet</div>
+    <div class="alert" id="alertBox"></div>
+
+    <audio id="alertSound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto" loop></audio>
+
+    <script>
+        let interval = null;
+        let alarmTriggered = false;
+
+        async function fetchPrice(symbol) {
+            const res = await fetch(`/price?symbol=${symbol}`);
+            return res.json();
+        }
+
+        function startTracking() {
+            const symbol = document.getElementById("symbolInput").value.toUpperCase();
+            const target = parseFloat(document.getElementById("targetPrice").value);
+            const priceDisplay = document.getElementById("priceDisplay");
+            const alertBox = document.getElementById("alertBox");
+            const stopBtn = document.getElementById("stopBtn");
+            const alertSound = document.getElementById("alertSound");
+
+            if (!symbol || isNaN(target)) {
+                alert("⚠️ Enter a valid symbol and target price.");
+                return;
+            }
+
+            alarmTriggered = false;
+            stopBtn.style.display = "inline-block";
+            if (interval) clearInterval(interval);
+
+            interval = setInterval(async () => {
+                try {
+                    const data = await fetchPrice(symbol);
+                    const currentPrice = parseFloat(data.price);
+                    priceDisplay.innerText = `💰 ${symbol} = $${currentPrice.toFixed(8)}`;
+
+                    if (currentPrice < target && !alarmTriggered) {
+                        alarmTriggered = true;
+                        alertBox.innerText = `🚨 ALERT: ${symbol} dropped below $${target}`;
+                        alertSound.play();
+                    }
+                } catch (err) {
+                    priceDisplay.innerText = "❌ Failed to fetch price.";
+                }
+            }, 2000);
+        }
+
+        function stopTracking() {
+            const alertSound = document.getElementById("alertSound");
+            clearInterval(interval);
+            interval = null;
+            document.getElementById("stopBtn").style.display = "none";
+            document.getElementById("alertBox").innerText = "";
+            document.getElementById("priceDisplay").innerText = "⏹ Tracking stopped.";
+            alertSound.pause();
+            alertSound.currentTime = 0;
+        }
+    </script>
+</body>
+
+</html>

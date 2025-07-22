@@ -1,0 +1,2452 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Pro Trading Calculator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #2962ff;
+            --primary-dark: #0039cb;
+            --secondary: #ff6d00;
+            --success: #00c853;
+            --danger: #ff1744;
+            --warning: #ffab00;
+            --dark: #121212;
+            --dark-card: #1e1e1e;
+            --dark-text: #f5f5f5;
+            --light: #f5f7fa;
+            --light-card: #ffffff;
+            --light-text: #263238;
+            --border: #e0e0e0;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            --chart-green: #4caf50;
+            --chart-red: #f44336;
+            --chart-blue: #2196f3;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a237e, #311b92);
+            color: var(--light-text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            transition: background 0.4s ease;
+        }
+
+        body.dark {
+            background: linear-gradient(135deg, #0d1b2a, #1b263b);
+            color: var(--dark-text);
+        }
+
+        .container {
+            max-width: 1400px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--light-card);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            padding: 30px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body.dark .card {
+            background: var(--dark-card);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        body.dark .card-header {
+            border-bottom: 1px solid #333;
+        }
+
+        .card-title {
+            font-size: 24px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 24px;
+            background: #ddd;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch::before {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        body.dark .toggle-switch {
+            background: #555;
+        }
+
+        body.dark .toggle-switch::before {
+            transform: translateX(26px);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: var(--light-text);
+        }
+
+        body.dark .input-label {
+            color: var(--dark-text);
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 14px 15px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 16px;
+            background: rgba(245, 247, 250, 0.8);
+            transition: all 0.3s;
+        }
+
+        body.dark .input-field {
+            background: #2a2a2a;
+            border-color: #444;
+            color: var(--dark-text);
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(41, 98, 255, 0.2);
+        }
+
+        .slider-container {
+            margin-top: 5px;
+        }
+
+        .slider {
+            width: 100%;
+            height: 6px;
+            appearance: none;
+            -webkit-appearance: none;
+            background: #e0e0e0;
+            border-radius: 3px;
+            outline: none;
+        }
+
+        body.dark .slider {
+            background: #444;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            background: var(--primary-dark);
+        }
+
+        .row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .row>div {
+            flex: 1;
+        }
+
+        .position-toggle {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .position-btn {
+            flex: 1;
+            padding: 14px;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s;
+            background: #f0f4ff;
+            color: var(--primary);
+        }
+
+        body.dark .position-btn {
+            background: #2a2a2a;
+        }
+
+        .position-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .position-btn.short.active {
+            background: var(--danger);
+        }
+
+        .result-container {
+            background: linear-gradient(135deg, #2962ff, #0039cb);
+            border-radius: 15px;
+            padding: 20px;
+            color: white;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(41, 98, 255, 0.3);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        body.dark .result-container {
+            background: linear-gradient(135deg, #1e3a8a, #0d2b6b);
+        }
+
+        .result-item {
+            text-align: center;
+        }
+
+        .result-label {
+            font-size: 14px;
+            margin-bottom: 5px;
+            opacity: 0.9;
+        }
+
+        .result-value {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: #f0f4ff;
+            color: var(--primary);
+        }
+
+        body.dark .btn-secondary {
+            background: #2a2a2a;
+            color: var(--dark-text);
+        }
+
+        .btn-secondary:hover {
+            background: #e0e8ff;
+        }
+
+        body.dark .btn-secondary:hover {
+            background: #333;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #009624;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #d50000;
+        }
+
+        .conversion-result {
+            background: linear-gradient(135deg, #00c853, #009624);
+            border-radius: 15px;
+            padding: 20px;
+            color: white;
+            margin-top: 20px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 24px;
+            box-shadow: 0 4px 15px rgba(0, 200, 83, 0.3);
+            display: none;
+        }
+
+        body.dark .conversion-result {
+            background: linear-gradient(135deg, #006400, #004d00);
+        }
+
+        .currency-flags {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 15px 0;
+            font-size: 24px;
+        }
+
+        .currency-flags span {
+            font-size: 14px;
+            font-weight: 600;
+            background: rgba(0, 0, 0, 0.1);
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+
+        .info-icon {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 20px;
+            height: 20px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            font-size: 12px;
+            cursor: help;
+            margin-left: 5px;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 12px;
+            font-weight: normal;
+        }
+
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            grid-column: 1 / -1;
+        }
+
+        .logo h1 {
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-icon {
+            font-size: 40px;
+            color: var(--secondary);
+        }
+
+        .calculator-icon {
+            font-size: 24px;
+            color: var(--primary);
+        }
+
+        /* Advanced Features */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            background: #f0f4ff;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        body.dark .tab {
+            background: #2a2a2a;
+        }
+
+        .tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .profit-loss-container {
+            background: linear-gradient(135deg, #4caf50, #2e7d32);
+            border-radius: 15px;
+            padding: 20px;
+            color: white;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        body.dark .profit-loss-container {
+            background: linear-gradient(135deg, #2e7d32, #1b5e20);
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 12px;
+            overflow-x: auto;
+        }
+
+        .history-table th,
+        .history-table td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+        }
+
+        body.dark .history-table th,
+        body.dark .history-table td {
+            border-bottom: 1px solid #444;
+        }
+
+        .history-table th {
+            background: rgba(41, 98, 255, 0.1);
+            font-weight: 600;
+            font-size: 11px;
+        }
+
+        body.dark .history-table th {
+            background: rgba(41, 98, 255, 0.2);
+        }
+
+        .history-table tr:hover {
+            background: rgba(41, 98, 255, 0.05);
+        }
+
+        body.dark .history-table tr:hover {
+            background: rgba(41, 98, 255, 0.1);
+        }
+
+        .profit {
+            color: var(--success);
+        }
+
+        .loss {
+            color: var(--danger);
+        }
+
+        .chart-container {
+            height: 200px;
+            margin-top: 20px;
+        }
+
+        .currency-select {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .currency-select select {
+            flex: 1;
+            padding: 14px 15px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 16px;
+            background: rgba(245, 247, 250, 0.8);
+        }
+
+        body.dark .currency-select select {
+            background: #2a2a2a;
+            border-color: #444;
+            color: var(--dark-text);
+        }
+
+        .risk-container {
+            background: linear-gradient(135deg, #ffab00, #ff6d00);
+            border-radius: 15px;
+            padding: 20px;
+            color: white;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(255, 171, 0, 0.3);
+        }
+
+        body.dark .risk-container {
+            background: linear-gradient(135deg, #e65100, #bf360c);
+        }
+
+        .risk-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .risk-value {
+            font-weight: 600;
+        }
+
+        .clear-history {
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        .section-title {
+            font-size: 18px;
+            margin: 20px 0 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        body.dark .section-title {
+            border-bottom: 1px solid #444;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--light-card);
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        body.dark .modal-content {
+            background: var(--dark-card);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+            transition: all 0.3s;
+        }
+
+        .close-modal:hover {
+            color: var(--danger);
+        }
+
+        .modal-body {
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .history-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .history-table-container {
+            overflow-x: auto;
+            max-width: 100%;
+        }
+
+        /* Trade outcome modal styles */
+        .trade-outcome-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1001;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .outcome-buttons {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .outcome-btn {
+            flex: 1;
+            padding: 15px;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .outcome-btn.win {
+            background: var(--success);
+            color: white;
+        }
+
+        .outcome-btn.loss {
+            background: var(--danger);
+            color: white;
+        }
+
+        .outcome-btn.pending {
+            background: var(--warning);
+            color: white;
+        }
+
+        .outcome-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        /* Outcome status icons */
+        .outcome-icon {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            margin-right: 5px;
+            font-size: 12px;
+        }
+
+        .outcome-win {
+            background: var(--success);
+            color: white;
+        }
+
+        .outcome-loss {
+            background: var(--danger);
+            color: white;
+        }
+
+        .outcome-pending {
+            background: var(--warning);
+            color: white;
+        }
+
+        /* Update Outcome Modal */
+        .update-outcome-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1002;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .update-outcome-buttons {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .update-outcome-btn {
+            flex: 1;
+            padding: 15px;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .update-outcome-btn.win {
+            background: var(--success);
+            color: white;
+        }
+
+        .update-outcome-btn.loss {
+            background: var(--danger);
+            color: white;
+        }
+
+        /* Mark Outcome Button */
+        .mark-outcome-btn {
+            padding: 4px 8px;
+            font-size: 12px;
+            border-radius: 4px;
+            border: none;
+            background: var(--warning);
+            color: white;
+            cursor: pointer;
+            margin-top: 5px;
+            display: inline-block;
+        }
+
+        .mark-outcome-btn:hover {
+            opacity: 0.9;
+        }
+
+        /* Notification styles */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            font-weight: 600;
+            transition: all 0.3s ease;
+            max-width: 300px;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .notification.success {
+            background: var(--success);
+            color: white;
+        }
+
+        .notification.error {
+            background: var(--danger);
+            color: white;
+        }
+
+        .notification.warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        .notification.info {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Notification icon */
+        .notification i {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="logo">
+            <i class="fas fa-calculator logo-icon"></i>
+            <h1>Pro Trading Calculator</h1>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <i class="fas fa-chart-line calculator-icon"></i>
+                    <span>Stop Loss Calculator</span>
+                </div>
+                <div class="toggle-container">
+                    <span>Dark Mode</span>
+                    <div class="toggle-switch" onclick="toggleTheme()"></div>
+                </div>
+            </div>
+
+            <!-- Tabs for advanced features -->
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('trade-calculator')">Trade Calculator</div>
+                <div class="tab" onclick="switchTab('risk-management')">Risk Management</div>
+                <div class="tab" onclick="switchTab('history')">Trade History</div>
+            </div>
+
+            <!-- Trade Calculator Tab -->
+            <div class="tab-content active" id="trade-calculator">
+                <!-- Asset Name Input -->
+                <div class="input-group">
+                    <div class="input-label">
+                        <i class="fas fa-coins"></i>
+                        <span>Asset/Symbol</span>
+                        <div class="tooltip">
+                            <div class="info-icon">i</div>
+                            <span class="tooltip-text">Enter the trading symbol (e.g., BTC/USD, AAPL, EUR/USD)</span>
+                        </div>
+                    </div>
+                    <input type="text" id="assetName" class="input-field" placeholder="e.g., BTC/USD, AAPL, EUR/USD">
+                </div>
+
+                <div class="input-group">
+                    <div class="input-label">
+                        <i class="fas fa-tag"></i>
+                        <span>Entry Price ($)</span>
+                        <div class="tooltip">
+                            <div class="info-icon">i</div>
+                            <span class="tooltip-text">The price at which you entered the trade</span>
+                        </div>
+                    </div>
+                    <input type="number" id="entry" class="input-field" step="0.01" placeholder="Enter entry price"
+                        oninput="calc()">
+                </div>
+
+                <div class="row">
+                    <div class="input-group">
+                        <div class="input-label">
+                            <i class="fas fa-wallet"></i>
+                            <span>Original Amount ($)</span>
+                        </div>
+                        <input type="number" id="original" class="input-field" value="5.88" step="0.01"
+                            oninput="updateLeverage()">
+                        <div class="slider-container">
+                            <input type="range" min="1" max="100" value="5.88" step="0.01" class="slider"
+                                id="originalSlider" oninput="updateOriginalFromSlider()">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <div class="input-label">
+                            <i class="fas fa-bolt"></i>
+                            <span>Leverage (×)</span>
+                        </div>
+                        <input type="number" id="leverageX" class="input-field" value="20" step="1" min="1" max="100"
+                            oninput="updateLeverage()">
+                        <div class="slider-container">
+                            <input type="range" min="1" max="50" value="20" step="1" class="slider" id="leverageSlider"
+                                oninput="updateLeverageFromSlider()">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <div class="input-label">
+                        <i class="fas fa-sack-dollar"></i>
+                        <span>Leverage Amount ($)</span>
+                    </div>
+                    <input type="number" id="leverage" class="input-field" readonly>
+                </div>
+
+                <div class="input-group">
+                    <div class="input-label">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>Risk ($)</span>
+                        <div class="tooltip">
+                            <div class="info-icon">i</div>
+                            <span class="tooltip-text">The amount you're willing to risk on this trade</span>
+                        </div>
+                    </div>
+                    <input type="number" id="risk" class="input-field" value="0.592" step="0.001" oninput="calc()">
+                    <div class="slider-container">
+                        <input type="range" min="0.1" max="5" value="0.592" step="0.01" class="slider" id="riskSlider"
+                            oninput="updateRiskFromSlider()">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <div class="input-label">
+                        <i class="fas fa-bullseye"></i>
+                        <span>Target Price ($)</span>
+                        <div class="tooltip">
+                            <div class="info-icon">i</div>
+                            <span class="tooltip-text">Your target price for taking profits</span>
+                        </div>
+                    </div>
+                    <input type="number" id="target" class="input-field" step="0.01" placeholder="Enter target price"
+                        oninput="calc()">
+                </div>
+
+                <div class="position-toggle">
+                    <button id="longBtn" class="position-btn active" onclick="setPosition('long')">
+                        <i class="fas fa-arrow-up"></i> Long
+                    </button>
+                    <button id="shortBtn" class="position-btn" onclick="setPosition('short')">
+                        <i class="fas fa-arrow-down"></i> Short
+                    </button>
+                </div>
+
+                <div class="result-container">
+                    <div class="result-item">
+                        <div class="result-label">Stop Loss Value</div>
+                        <div id="slValue" class="result-value">$--</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Stop Loss Price</div>
+                        <div id="slPrice" class="result-value">$--</div>
+                    </div>
+                </div>
+
+                <div class="profit-loss-container">
+                    <div class="result-item">
+                        <div class="result-label">Potential Profit</div>
+                        <div id="profitValue" class="result-value">$--</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Risk/Reward Ratio</div>
+                        <div id="rrRatio" class="result-value">--</div>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="resetCalculator()">
+                        <i class="fas fa-redo"></i> Reset
+                    </button>
+                    <button class="btn btn-primary" onclick="showTradeSummary()">
+                        <i class="fas fa-file-alt"></i> Trade Summary
+                    </button>
+                    <button class="btn btn-success" onclick="saveTrade()">
+                        <i class="fas fa-save"></i> Save Trade
+                    </button>
+                </div>
+            </div>
+
+            <!-- Risk Management Tab -->
+            <div class="tab-content" id="risk-management">
+                <div class="input-group">
+                    <div class="input-label">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <span>Account Balance ($)</span>
+                    </div>
+                    <input type="number" id="accountBalance" class="input-field" value="1000" step="1"
+                        oninput="calculateRisk()">
+                </div>
+
+                <div class="input-group">
+                    <div class="input-label">
+                        <i class="fas fa-percentage"></i>
+                        <span>Risk Percentage per Trade</span>
+                    </div>
+                    <input type="number" id="riskPercentage" class="input-field" value="2" step="0.1"
+                        oninput="calculateRisk()">
+                    <div class="slider-container">
+                        <input type="range" min="0.1" max="10" value="2" step="0.1" class="slider"
+                            id="riskPercentageSlider" oninput="updateRiskPercentage()">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <div class="input-label">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>Stop Loss Distance ($)</span>
+                    </div>
+                    <input type="number" id="stopDistance" class="input-field" value="0.50" step="0.01"
+                        oninput="calculateRisk()">
+                </div>
+
+                <div class="risk-container">
+                    <div class="risk-item">
+                        <span>Max Risk per Trade:</span>
+                        <span id="maxRisk" class="risk-value">$20.00</span>
+                    </div>
+                    <div class="risk-item">
+                        <span>Position Size:</span>
+                        <span id="positionSize" class="risk-value">40 units</span>
+                    </div>
+                    <div class="risk-item">
+                        <span>Position Value:</span>
+                        <span id="positionValue" class="risk-value">$200.00</span>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="riskChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Trade History Tab -->
+            <div class="tab-content" id="history">
+                <div class="input-group">
+                    <div class="input-label">
+                        <i class="fas fa-filter"></i>
+                        <span>Filter by Position</span>
+                    </div>
+                    <select id="historyFilter" class="input-field" onchange="filterHistory()">
+                        <option value="all">All Trades</option>
+                        <option value="long">Long Positions</option>
+                        <option value="short">Short Positions</option>
+                    </select>
+                </div>
+
+                <div class="history-table-container">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Asset</th>
+                                <th>Position</th>
+                                <th>Entry</th>
+                                <th>Target</th>
+                                <th>Stop Loss</th>
+                                <th>Outcome</th>
+                                <th>P/L</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody">
+                            <!-- History will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="history-actions">
+                    <button class="btn btn-secondary clear-history" onclick="clearHistory()">
+                        <i class="fas fa-trash"></i> Clear History
+                    </button>
+                    <button class="btn btn-primary" onclick="copyTradeHistory()">
+                        <i class="fas fa-copy"></i> Copy History
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <i class="fas fa-exchange-alt calculator-icon"></i>
+                    <span>Currency Converter</span>
+                </div>
+            </div>
+
+            <div class="currency-select">
+                <select id="fromCurrency" class="input-field" onchange="convertCurrency()">
+                    <option value="USD" selected>USD</option>
+                    <option value="EUR">EUR</option>
+                    <option value="GBP">GBP</option>
+                    <option value="JPY">JPY</option>
+                    <option value="CAD">CAD</option>
+                    <option value="AUD">AUD</option>
+                    <option value="CHF">CHF</option>
+                    <option value="CNY">CNY</option>
+                    <option value="INR">INR</option>
+                </select>
+
+                <i class="fas fa-exchange-alt" style="display: flex; align-items: center;"></i>
+
+                <select id="toCurrency" class="input-field" onchange="convertCurrency()">
+                    <option value="INR" selected>INR</option>
+                    <option value="USD">USD</option>
+                    <option value="EUR">EUR</option>
+                    <option value="GBP">GBP</option>
+                    <option value="JPY">JPY</option>
+                    <option value="CAD">CAD</option>
+                    <option value="AUD">AUD</option>
+                    <option value="CHF">CHF</option>
+                    <option value="CNY">CNY</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <div class="input-label">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <span>Enter Amount</span>
+                </div>
+                <input type="number" id="amount" class="input-field" placeholder="e.g., 100"
+                    oninput="convertCurrency()">
+            </div>
+
+            <div class="input-group">
+                <div class="input-label">
+                    <i class="fas fa-globe"></i>
+                    <span id="rateLabel">1 USD = ? INR</span>
+                </div>
+                <input type="number" id="rate" class="input-field" value="85" step="0.01" oninput="convertCurrency()">
+            </div>
+
+            <div id="convertResult" class="conversion-result">
+                <div id="conversionText">Result will appear here</div>
+            </div>
+
+            <div class="section-title">Exchange Rates (1 USD)</div>
+
+            <div class="row">
+                <div class="input-group">
+                    <div class="input-label">
+                        <i class="fas fa-euro-sign"></i>
+                        <span>EUR</span>
+                    </div>
+                    <input type="text" id="eurRate" class="input-field" value="0.92" readonly>
+                </div>
+
+                <div class="input-group">
+                    <div class="input-label">
+                        <i class="fas fa-pound-sign"></i>
+                        <span>GBP</span>
+                    </div>
+                    <input type="text" id="gbpRate" class="input-field" value="0.79" readonly>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="input-group">
+                    <div class="input-label">
+                        <i class="fas fa-yen-sign"></i>
+                        <span>JPY</span>
+                    </div>
+                    <input type="text" id="jpyRate" class="input-field" value="147.45" readonly>
+                </div>
+
+                <div class="input-group">
+                    <div class="input-label">
+                        <i class="fas fa-dollar-sign"></i>
+                        <span>CAD</span>
+                    </div>
+                    <input type="text" id="cadRate" class="input-field" value="1.35" readonly>
+                </div>
+            </div>
+        </div>
+
+        <!-- New Card for Performance Analytics -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <i class="fas fa-chart-pie calculator-icon"></i>
+                    <span>Performance Analytics</span>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="performanceChart"></canvas>
+            </div>
+
+            <div class="section-title">Trade Statistics</div>
+
+            <div class="row">
+                <div class="input-group">
+                    <div class="input-label">
+                        <i class="fas fa-percentage"></i>
+                        <span>Win Rate</span>
+                    </div>
+                    <input type="text" id="winRate" class="input-field" value="0%" readonly>
+                </div>
+
+                <div class="input-group">
+                    <div class="input-label">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Avg. Profit</span>
+                    </div>
+                    <input type="text" id="avgProfit" class="input-field" value="$0.00" readonly>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="input-group">
+                    <div class="input-label">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Avg. Loss</span>
+                    </div>
+                    <input type="text" id="avgLoss" class="input-field" value="$0.00" readonly>
+                </div>
+
+                <div class="input-group">
+                    <div class="input-label">
+                        <i class="fas fa-balance-scale"></i>
+                        <span>Profit Factor</span>
+                    </div>
+                    <input type="text" id="profitFactor" class="input-field" value="0.00" readonly>
+                </div>
+            </div>
+
+            <div class="section-title">Risk Profile</div>
+
+            <div class="input-group">
+                <div class="input-label">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Risk Tolerance</span>
+                </div>
+                <select id="riskTolerance" class="input-field" onchange="updateRecommendedSize()">
+                    <option value="low">Low (Conservative)</option>
+                    <option value="medium" selected>Medium (Balanced)</option>
+                    <option value="high">High (Aggressive)</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <div class="input-label">
+                    <i class="fas fa-lightbulb"></i>
+                    <span>Recommended Position Size</span>
+                </div>
+                <input type="text" id="recommendedSize" class="input-field" value="2.5% of account" readonly>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for unsaved changes -->
+    <div class="modal" id="exitModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Unsaved Trade History</h3>
+                <button class="close-modal" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>You have trade history that hasn't been copied yet. Closing the page will permanently delete this
+                    data.</p>
+                <p>Would you like to copy your trade history before leaving?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="copyAndClose()">
+                    <i class="fas fa-copy"></i> Copy and Close
+                </button>
+                <button class="btn btn-danger" onclick="forceClose()">
+                    <i class="fas fa-times"></i> Close Anyway
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trade Outcome Modal -->
+    <div class="trade-outcome-modal" id="tradeOutcomeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Trade Outcome</h3>
+                <button class="close-modal" onclick="closeTradeOutcomeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>How did this trade turn out?</p>
+                <div class="outcome-buttons">
+                    <button class="outcome-btn win" onclick="handleTradeOutcome('win')">
+                        <i class="fas fa-check-circle"></i> Win
+                    </button>
+                    <button class="outcome-btn loss" onclick="handleTradeOutcome('loss')">
+                        <i class="fas fa-times-circle"></i> Loss
+                    </button>
+                    <button class="outcome-btn pending" onclick="handleTradeOutcome('pending')">
+                        <i class="fas fa-clock"></i> Pending
+                    </button>
+                </div>
+                <div id="outcomeInputs" style="display: none;">
+                    <div class="input-group">
+                        <div class="input-label">
+                            <i class="fas fa-dollar-sign"></i>
+                            <span id="outcomeInputLabel">Exit Price ($)</span>
+                        </div>
+                        <input type="number" id="outcomePrice" class="input-field" step="0.01"
+                            placeholder="Enter exit price">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeTradeOutcomeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="finalizeTradeOutcome()">
+                    <i class="fas fa-save"></i> Save Trade
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Outcome Modal -->
+    <div class="update-outcome-modal" id="updateOutcomeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Update Trade Outcome</h3>
+                <button class="close-modal" onclick="closeUpdateOutcomeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Select the outcome for this trade:</p>
+                <div class="update-outcome-buttons">
+                    <button class="update-outcome-btn win" onclick="setOutcome('win')">
+                        <i class="fas fa-check-circle"></i> Win
+                    </button>
+                    <button class="update-outcome-btn loss" onclick="setOutcome('loss')">
+                        <i class="fas fa-times-circle"></i> Loss
+                    </button>
+                </div>
+                <div id="outcomePriceInput" style="display: none; margin-top: 20px;">
+                    <div class="input-group">
+                        <div class="input-label">
+                            <i class="fas fa-dollar-sign"></i>
+                            <span id="outcomePriceLabel">Exit Price ($)</span>
+                        </div>
+                        <input type="number" id="updateOutcomePrice" class="input-field" step="0.01"
+                            placeholder="Enter exit price">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeUpdateOutcomeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveOutcomeUpdate()">
+                    <i class="fas fa-save"></i> Update Outcome
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentTradeData = null;
+        let selectedOutcome = null;
+        let currentTradeToUpdate = null;
+        let selectedOutcomeForUpdate = null;
+
+        // Initialize the calculator
+        document.addEventListener('DOMContentLoaded', function () {
+            updateLeverage();
+            calculateRisk();
+            convertCurrency();
+            renderHistory();
+            initializeCharts();
+            updatePerformanceAnalytics();
+            updateRecommendedSize();
+
+            // Check if dark mode preference exists
+            if (localStorage.getItem('darkMode') === 'true') {
+                document.body.classList.add('dark');
+            }
+
+            // Add beforeunload event listener
+            window.addEventListener('beforeunload', handleBeforeUnload);
+        });
+
+        // Handle page exit
+        function handleBeforeUnload(e) {
+            const trades = JSON.parse(localStorage.getItem('trades')) || [];
+            if (trades.length > 0) {
+                e.preventDefault();
+                e.returnValue = '';
+                showExitModal();
+                return '';
+            }
+        }
+
+        // Show exit modal
+        function showExitModal() {
+            document.getElementById('exitModal').style.display = 'flex';
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('exitModal').style.display = 'none';
+        }
+
+        // Copy history and close page
+        function copyAndClose() {
+            copyTradeHistory();
+            setTimeout(() => {
+                closeModal();
+                // Allow page to close after a brief delay
+                setTimeout(() => {
+                    window.removeEventListener('beforeunload', handleBeforeUnload);
+                    window.close();
+                }, 500);
+            }, 1000);
+        }
+
+        // Close page without copying
+        function forceClose() {
+            closeModal();
+            setTimeout(() => {
+                window.removeEventListener('beforeunload', handleBeforeUnload);
+                window.close();
+            }, 100);
+        }
+
+        // Initialize charts
+        function initializeCharts() {
+            try {
+                // Risk Management Chart
+                const riskCtx = document.getElementById('riskChart').getContext('2d');
+                window.riskChart = new Chart(riskCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Risk Capital', 'Available Capital'],
+                        datasets: [{
+                            data: [20, 80],
+                            backgroundColor: ['#ff6d00', '#2962ff'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    color: document.body.classList.contains('dark') ? '#f5f5f5' : '#263238'
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // Performance Chart
+                const perfCtx = document.getElementById('performanceChart').getContext('2d');
+                window.perfChart = new Chart(perfCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            label: 'Profit/Loss ($)',
+                            data: [],
+                            backgroundColor: [],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    color: document.body.classList.contains('dark') ? '#f5f5f5' : '#263238'
+                                },
+                                grid: {
+                                    color: document.body.classList.contains('dark') ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    color: document.body.classList.contains('dark') ? '#f5f5f5' : '#263238'
+                                },
+                                grid: {
+                                    color: document.body.classList.contains('dark') ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: document.body.classList.contains('dark') ? '#f5f5f5' : '#263238'
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.log('Chart initialization error:', error);
+            }
+        }
+
+        // Update Performance Analytics based on real trade data
+        function updatePerformanceAnalytics() {
+            const trades = JSON.parse(localStorage.getItem('trades')) || [];
+
+            if (trades.length === 0) {
+                // No trades yet - show default values
+                document.getElementById('winRate').value = '0%';
+                document.getElementById('avgProfit').value = '$0.00';
+                document.getElementById('avgLoss').value = '$0.00';
+                document.getElementById('profitFactor').value = '0.00';
+
+                // Clear chart
+                if (window.perfChart) {
+                    window.perfChart.data.labels = ['No trades yet'];
+                    window.perfChart.data.datasets[0].data = [0];
+                    window.perfChart.data.datasets[0].backgroundColor = ['#ccc'];
+                    window.perfChart.update();
+                }
+                return;
+            }
+
+            // Filter out pending trades for statistics
+            const completedTrades = trades.filter(trade => trade.outcome && trade.outcome !== 'pending');
+
+            if (completedTrades.length === 0) {
+                document.getElementById('winRate').value = '0%';
+                document.getElementById('avgProfit').value = '$0.00';
+                document.getElementById('avgLoss').value = '$0.00';
+                document.getElementById('profitFactor').value = '0.00';
+
+                // Show pending trades in chart
+                if (window.perfChart) {
+                    const labels = trades.map((trade, index) => `Trade ${index + 1}`);
+                    const data = trades.map(trade => 0); // Pending trades show as 0
+                    const colors = trades.map(() => '#ffab00'); // Warning color for pending
+
+                    window.perfChart.data.labels = labels;
+                    window.perfChart.data.datasets[0].data = data;
+                    window.perfChart.data.datasets[0].backgroundColor = colors;
+                    window.perfChart.update();
+                }
+                return;
+            }
+
+            // Calculate statistics
+            const winningTrades = completedTrades.filter(trade => trade.profit > 0);
+            const losingTrades = completedTrades.filter(trade => trade.profit < 0);
+
+            const winRate = ((winningTrades.length / completedTrades.length) * 100).toFixed(1);
+
+            const avgProfit = winningTrades.length > 0
+                ? (winningTrades.reduce((sum, trade) => sum + trade.profit, 0) / winningTrades.length).toFixed(2)
+                : '0.00';
+
+            const avgLoss = losingTrades.length > 0
+                ? Math.abs(losingTrades.reduce((sum, trade) => sum + trade.profit, 0) / losingTrades.length).toFixed(2)
+                : '0.00';
+
+            const totalProfit = winningTrades.reduce((sum, trade) => sum + trade.profit, 0);
+            const totalLoss = Math.abs(losingTrades.reduce((sum, trade) => sum + trade.profit, 0));
+            const profitFactor = totalLoss > 0 ? (totalProfit / totalLoss).toFixed(2) : totalProfit > 0 ? '∞' : '0.00';
+
+            // Update display
+            document.getElementById('winRate').value = `${winRate}%`;
+            document.getElementById('avgProfit').value = `$${avgProfit}`;
+            document.getElementById('avgLoss').value = `$${avgLoss}`;
+            document.getElementById('profitFactor').value = profitFactor;
+
+            // Update chart with recent trades (last 10)
+            if (window.perfChart) {
+                const recentTrades = trades.slice(-10);
+                const labels = recentTrades.map((trade, index) => {
+                    const tradeNum = trades.length - 9 + index;
+                    return `Trade ${tradeNum}`;
+                });
+
+                const data = recentTrades.map(trade => {
+                    if (!trade.outcome || trade.outcome === 'pending') return 0;
+                    return trade.profit;
+                });
+
+                const colors = recentTrades.map(trade => {
+                    if (!trade.outcome || trade.outcome === 'pending') return '#ffab00'; // Warning for pending
+                    return trade.profit > 0 ? '#4caf50' : '#f44336'; // Green for profit, red for loss
+                });
+
+                window.perfChart.data.labels = labels;
+                window.perfChart.data.datasets[0].data = data;
+                window.perfChart.data.datasets[0].backgroundColor = colors;
+                window.perfChart.update();
+            }
+        }
+
+        // Update recommended position size based on risk tolerance
+        function updateRecommendedSize() {
+            const riskTolerance = document.getElementById('riskTolerance').value;
+            const trades = JSON.parse(localStorage.getItem('trades')) || [];
+            const completedTrades = trades.filter(trade => trade.outcome && trade.outcome !== 'pending');
+
+            let basePercentage;
+            switch (riskTolerance) {
+                case 'low':
+                    basePercentage = 1.0;
+                    break;
+                case 'high':
+                    basePercentage = 5.0;
+                    break;
+                default: // medium
+                    basePercentage = 2.5;
+                    break;
+            }
+
+            // Adjust based on recent performance
+            if (completedTrades.length >= 5) {
+                const recentTrades = completedTrades.slice(-5);
+                const winRate = (recentTrades.filter(trade => trade.profit > 0).length / recentTrades.length) * 100;
+
+                if (winRate >= 70) {
+                    basePercentage *= 1.2; // Increase by 20% for good performance
+                } else if (winRate <= 30) {
+                    basePercentage *= 0.8; // Decrease by 20% for poor performance
+                }
+            }
+
+            document.getElementById('recommendedSize').value = `${basePercentage.toFixed(1)}% of account`;
+        }
+
+        function updateLeverage() {
+            const original = parseFloat(document.getElementById("original").value) || 0;
+            const leverageX = parseFloat(document.getElementById("leverageX").value) || 0;
+            if (original > 0 && leverageX > 0) {
+                const leverage = original * leverageX;
+                document.getElementById("leverage").value = leverage.toFixed(2);
+                calc();
+            }
+        }
+
+        function updateOriginalFromSlider() {
+            const value = document.getElementById("originalSlider").value;
+            document.getElementById("original").value = value;
+            updateLeverage();
+        }
+
+        function updateLeverageFromSlider() {
+            const value = document.getElementById("leverageSlider").value;
+            document.getElementById("leverageX").value = value;
+            updateLeverage();
+        }
+
+        function updateRiskFromSlider() {
+            const value = document.getElementById("riskSlider").value;
+            document.getElementById("risk").value = value;
+            calc();
+        }
+
+        function updateRiskPercentage() {
+            const value = document.getElementById("riskPercentageSlider").value;
+            document.getElementById("riskPercentage").value = value;
+            calculateRisk();
+        }
+
+        function setPosition(type) {
+            document.getElementById("longBtn").classList.toggle("active", type === "long");
+            document.getElementById("shortBtn").classList.toggle("active", type === "short");
+            calc();
+        }
+
+        function switchTab(tabId) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Show selected tab content
+            document.getElementById(tabId).classList.add('active');
+
+            // Set active class on clicked tab
+            event.target.classList.add('active');
+
+            // Update charts when switching to risk management
+            if (tabId === 'risk-management') {
+                updateRiskChart();
+            }
+        }
+
+        function calc() {
+            const entry = parseFloat(document.getElementById("entry").value) || 0;
+            const leverage = parseFloat(document.getElementById("leverage").value) || 0;
+            const risk = parseFloat(document.getElementById("risk").value) || 0;
+            const target = parseFloat(document.getElementById("target").value) || 0;
+            const isLong = document.getElementById("longBtn").classList.contains("active");
+
+            if (entry <= 0 || leverage <= 0 || risk <= 0) {
+                document.getElementById("slValue").textContent = "$--";
+                document.getElementById("slPrice").textContent = "$--";
+                document.getElementById("profitValue").textContent = "$--";
+                document.getElementById("rrRatio").textContent = "--";
+                return;
+            }
+
+            // Calculate stop loss
+            const slValue = (entry * risk) / leverage;
+            const slPrice = isLong ? (entry - slValue) : (entry + slValue);
+
+            // Calculate profit and risk/reward ratio
+            let profitValue = 0;
+            let rrRatio = "--";
+
+            if (target > 0) {
+                const priceDiff = Math.abs(target - entry);
+                profitValue = (priceDiff * leverage) / entry;
+
+                if (isLong && target > entry) {
+                    rrRatio = (profitValue / risk).toFixed(2) + ":1";
+                } else if (!isLong && target < entry) {
+                    rrRatio = (profitValue / risk).toFixed(2) + ":1";
+                } else {
+                    profitValue = 0;
+                    rrRatio = "--";
+                }
+            }
+
+            document.getElementById("slValue").textContent = `$${slValue.toFixed(2)}`;
+            document.getElementById("slPrice").textContent = `$${slPrice.toFixed(2)}`;
+            document.getElementById("profitValue").textContent = `$${profitValue.toFixed(2)}`;
+            document.getElementById("rrRatio").textContent = rrRatio;
+        }
+
+        function calculateRisk() {
+            const accountBalance = parseFloat(document.getElementById("accountBalance").value) || 0;
+            const riskPercentage = parseFloat(document.getElementById("riskPercentage").value) || 0;
+            const stopDistance = parseFloat(document.getElementById("stopDistance").value) || 0;
+
+            if (accountBalance <= 0 || riskPercentage <= 0 || stopDistance <= 0) {
+                return;
+            }
+
+            const maxRisk = (accountBalance * riskPercentage) / 100;
+            const positionSize = maxRisk / stopDistance;
+            const positionValue = positionSize * 5; // Assuming $5 per unit as example
+
+            document.getElementById("maxRisk").textContent = `$${maxRisk.toFixed(2)}`;
+            document.getElementById("positionSize").textContent = `${positionSize.toFixed(0)} units`;
+            document.getElementById("positionValue").textContent = `$${positionValue.toFixed(2)}`;
+
+            // Update risk chart
+            updateRiskChart();
+        }
+
+        function updateRiskChart() {
+            const accountBalance = parseFloat(document.getElementById("accountBalance").value) || 1000;
+            const riskPercentage = parseFloat(document.getElementById("riskPercentage").value) || 2;
+
+            const riskAmount = (accountBalance * riskPercentage) / 100;
+            const availableAmount = accountBalance - riskAmount;
+
+            if (window.riskChart) {
+                window.riskChart.data.datasets[0].data = [riskAmount, availableAmount];
+                window.riskChart.update();
+            }
+        }
+
+        function convertCurrency() {
+            const amount = parseFloat(document.getElementById("amount").value) || 0;
+            const rate = parseFloat(document.getElementById("rate").value) || 1;
+            const fromCurrency = document.getElementById("fromCurrency").value;
+            const toCurrency = document.getElementById("toCurrency").value;
+
+            // Update rate label
+            document.getElementById("rateLabel").textContent = `1 ${fromCurrency} = ? ${toCurrency}`;
+
+            if (amount && rate) {
+                const result = document.getElementById("convertResult");
+                let converted;
+
+                if (fromCurrency === "USD" && toCurrency === "INR") {
+                    converted = amount * rate;
+                    document.getElementById("conversionText").textContent = `$${amount.toFixed(2)} = ₹${converted.toFixed(2)}`;
+                } else if (fromCurrency === "INR" && toCurrency === "USD") {
+                    converted = amount / rate;
+                    document.getElementById("conversionText").textContent = `₹${amount.toFixed(2)} = $${converted.toFixed(2)}`;
+                } else {
+                    // For other currencies, use a simple conversion
+                    const conversionRates = {
+                        USD: 1,
+                        EUR: 0.92,
+                        GBP: 0.79,
+                        JPY: 147.45,
+                        CAD: 1.35,
+                        AUD: 1.52,
+                        CHF: 0.88,
+                        CNY: 7.23,
+                        INR: 85
+                    };
+
+                    const fromRate = conversionRates[fromCurrency] || 1;
+                    const toRate = conversionRates[toCurrency] || 1;
+                    converted = amount * (toRate / fromRate);
+
+                    document.getElementById("conversionText").textContent = `${amount.toFixed(2)} ${fromCurrency} = ${converted.toFixed(2)} ${toCurrency}`;
+                }
+
+                result.style.display = "block";
+            }
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            body.classList.toggle("dark");
+            // Save preference to localStorage
+            localStorage.setItem('darkMode', body.classList.contains('dark'));
+            showNotification('Theme changed successfully!', 'info');
+
+            // Update charts for dark mode
+            updateChartsForTheme();
+        }
+
+        function updateChartsForTheme() {
+            if (window.riskChart) {
+                window.riskChart.options.plugins.legend.labels.color = document.body.classList.contains('dark') ? '#f5f5f5' : '#263238';
+                window.riskChart.update();
+            }
+
+            if (window.perfChart) {
+                const textColor = document.body.classList.contains('dark') ? '#f5f5f5' : '#263238';
+                const gridColor = document.body.classList.contains('dark') ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+
+                window.perfChart.options.scales.y.ticks.color = textColor;
+                window.perfChart.options.scales.y.grid.color = gridColor;
+                window.perfChart.options.scales.x.ticks.color = textColor;
+                window.perfChart.options.scales.x.grid.color = gridColor;
+                window.perfChart.options.plugins.legend.labels.color = textColor;
+                window.perfChart.update();
+            }
+        }
+
+        function resetCalculator() {
+            document.getElementById("assetName").value = "";
+            document.getElementById("entry").value = "";
+            document.getElementById("original").value = "5.88";
+            document.getElementById("originalSlider").value = "5.88";
+            document.getElementById("leverageX").value = "20";
+            document.getElementById("leverageSlider").value = "20";
+            document.getElementById("risk").value = "0.592";
+            document.getElementById("riskSlider").value = "0.592";
+            document.getElementById("target").value = "";
+            document.getElementById("longBtn").classList.add("active");
+            document.getElementById("shortBtn").classList.remove("active");
+            updateLeverage();
+            calc();
+            showNotification('Calculator has been reset', 'info');
+        }
+
+        // Fixed saveTrade function with better error handling
+        function saveTrade() {
+            try {
+                const assetName = document.getElementById("assetName").value.trim();
+                const entry = parseFloat(document.getElementById("entry").value) || 0;
+                const target = parseFloat(document.getElementById("target").value) || 0;
+                const slPriceText = document.getElementById("slPrice").textContent.replace('$', '');
+                const slPrice = parseFloat(slPriceText) || 0;
+                const position = document.getElementById("longBtn").classList.contains("active") ? "Long" : "Short";
+                const leverage = parseFloat(document.getElementById("leverage").value) || 0;
+                const risk = parseFloat(document.getElementById("risk").value) || 0;
+
+                // Validation
+                if (!assetName) {
+                    showNotification("Please enter an asset/symbol name", "error");
+                    return;
+                }
+
+                if (entry <= 0) {
+                    showNotification("Please enter a valid entry price", "error");
+                    return;
+                }
+
+                if (leverage <= 0) {
+                    showNotification("Please enter valid leverage amount", "error");
+                    return;
+                }
+
+                if (risk <= 0) {
+                    showNotification("Please enter valid risk amount", "error");
+                    return;
+                }
+
+                if (slPrice <= 0) {
+                    showNotification("Please calculate stop loss first", "error");
+                    return;
+                }
+
+                // Get current date and time
+                const now = new Date();
+                const date = now.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+                const time = now.toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                // Calculate potential profit for display
+                const potentialProfit = parseFloat(document.getElementById("profitValue").textContent.replace('$', '') || 0);
+
+                // Store current trade data for outcome modal
+                currentTradeData = {
+                    id: Date.now(),
+                    date: date,
+                    time: time,
+                    asset: assetName,
+                    position: position,
+                    entry: entry,
+                    target: target || 0,
+                    stopLoss: slPrice,
+                    potentialProfit: potentialProfit,
+                    leverage: leverage,
+                    risk: risk,
+                    originalAmount: parseFloat(document.getElementById("original").value) || 0,
+                    leverageX: parseFloat(document.getElementById("leverageX").value) || 0
+                };
+
+                // Show trade outcome modal
+                document.getElementById('tradeOutcomeModal').style.display = 'flex';
+
+                // Reset modal state
+                document.getElementById('outcomeInputs').style.display = 'none';
+                document.getElementById('outcomePrice').value = '';
+                selectedOutcome = null;
+
+                // Reset button opacity
+                document.querySelectorAll('.outcome-btn').forEach(btn => {
+                    btn.style.opacity = '0.6';
+                });
+
+            } catch (error) {
+                console.error("Error in saveTrade:", error);
+                showNotification("Error preparing trade data. Please try again.", "error");
+            }
+        }
+
+        function closeTradeOutcomeModal() {
+            document.getElementById('tradeOutcomeModal').style.display = 'none';
+            document.getElementById('outcomeInputs').style.display = 'none';
+            document.getElementById('outcomePrice').value = '';
+            selectedOutcome = null;
+            currentTradeData = null;
+        }
+
+        function handleTradeOutcome(outcome) {
+            selectedOutcome = outcome;
+
+            // Remove active class from all buttons
+            document.querySelectorAll('.outcome-btn').forEach(btn => {
+                btn.style.opacity = '0.6';
+            });
+
+            // Highlight selected button
+            event.target.style.opacity = '1';
+
+            if (outcome === 'win' || outcome === 'loss') {
+                document.getElementById('outcomeInputs').style.display = 'block';
+                document.getElementById('outcomeInputLabel').textContent =
+                    outcome === 'win' ? 'Target Price ($)' : 'Stop Loss Price ($)';
+                document.getElementById('outcomePrice').placeholder =
+                    outcome === 'win' ? 'Enter target price' : 'Enter stop loss price';
+            } else {
+                document.getElementById('outcomeInputs').style.display = 'none';
+            }
+        }
+
+        // Fixed finalizeTradeOutcome function with better error handling
+        function finalizeTradeOutcome() {
+            try {
+                if (!selectedOutcome) {
+                    showNotification('Please select a trade outcome', 'error');
+                    return;
+                }
+
+                if (!currentTradeData) {
+                    showNotification('Trade data not found', 'error');
+                    return;
+                }
+
+                let finalProfit = 0;
+
+                if (selectedOutcome === 'win' || selectedOutcome === 'loss') {
+                    const exitPrice = parseFloat(document.getElementById('outcomePrice').value);
+                    if (!exitPrice || exitPrice <= 0) {
+                        showNotification('Please enter a valid exit price', 'error');
+                        return;
+                    }
+
+                    // Calculate actual P/L based on exit price
+                    const entry = currentTradeData.entry;
+                    const leverage = currentTradeData.leverage;
+                    const originalAmount = currentTradeData.originalAmount;
+                    const isLong = currentTradeData.position === 'Long';
+
+                    if (leverage > 0 && entry > 0) {
+                        // Calculate profit/loss based on price movement and leverage
+                        const priceDiff = isLong ? (exitPrice - entry) : (entry - exitPrice);
+                        const percentageChange = priceDiff / entry;
+                        finalProfit = originalAmount * percentageChange * currentTradeData.leverageX;
+
+                        // Ensure loss is negative
+                        if (selectedOutcome === 'loss' && finalProfit > 0) {
+                            finalProfit = -finalProfit;
+                        }
+                        // Ensure win is positive
+                        if (selectedOutcome === 'win' && finalProfit < 0) {
+                            finalProfit = -finalProfit;
+                        }
+                    }
+                } else if (selectedOutcome === 'pending') {
+                    // For pending trades, use 0 as no P/L realized yet
+                    finalProfit = 0;
+                }
+
+                // Update trade data with outcome
+                currentTradeData.outcome = selectedOutcome;
+                currentTradeData.profit = finalProfit;
+                if (selectedOutcome !== 'pending') {
+                    currentTradeData.exitPrice = parseFloat(document.getElementById('outcomePrice').value);
+                }
+
+                // Save to localStorage
+                let trades = JSON.parse(localStorage.getItem('trades')) || [];
+                trades.push(currentTradeData);
+                localStorage.setItem('trades', JSON.stringify(trades));
+
+                // Update history table and performance analytics
+                renderHistory();
+                updatePerformanceAnalytics();
+                updateRecommendedSize();
+
+                // Close modal
+                closeTradeOutcomeModal();
+
+                showNotification("Trade saved successfully!", "success");
+
+            } catch (error) {
+                console.error("Error in finalizeTradeOutcome:", error);
+                showNotification("Error saving trade. Please try again.", "error");
+            }
+        }
+
+        function renderHistory() {
+            try {
+                const trades = JSON.parse(localStorage.getItem('trades')) || [];
+                const filter = document.getElementById("historyFilter").value;
+                const tableBody = document.getElementById("historyTableBody");
+
+                // Clear table
+                tableBody.innerHTML = "";
+
+                // Filter trades
+                const filteredTrades = filter === "all"
+                    ? trades
+                    : trades.filter(trade =>
+                        (filter === "long" && trade.position === "Long") ||
+                        (filter === "short" && trade.position === "Short")
+                    );
+
+                // Sort by date (newest first)
+                filteredTrades.sort((a, b) => b.id - a.id);
+
+                // Render trades
+                if (filteredTrades.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 20px;">No trades recorded yet</td></tr>`;
+                    return;
+                }
+
+                filteredTrades.forEach(trade => {
+                    const row = document.createElement("tr");
+                    const profitClass = trade.profit > 0 ? "profit" : trade.profit < 0 ? "loss" : "";
+
+                    // Outcome icon
+                    let outcomeIcon = '';
+                    let outcomeText = '';
+                    let profitText = '';
+
+                    if (trade.outcome === 'win') {
+                        outcomeIcon = '<span class="outcome-icon outcome-win"><i class="fas fa-check"></i></span>';
+                        outcomeText = 'Win';
+                        profitText = `${trade.profit > 0 ? '+' : ''}$${Math.abs(trade.profit).toFixed(2)}`;
+                    } else if (trade.outcome === 'loss') {
+                        outcomeIcon = '<span class="outcome-icon outcome-loss"><i class="fas fa-times"></i></span>';
+                        outcomeText = 'Loss';
+                        profitText = `-$${Math.abs(trade.profit).toFixed(2)}`;
+                    } else {
+                        outcomeIcon = '<span class="outcome-icon outcome-pending"><i class="fas fa-clock"></i></span>';
+                        outcomeText = 'Pending';
+                        profitText = `<button class="mark-outcome-btn" onclick="openUpdateOutcomeModal(${trade.id})">Mark Outcome</button>`;
+                    }
+
+                    row.innerHTML = `
+                        <td>${trade.date}</td>
+                        <td>${trade.time}</td>
+                        <td>${trade.asset || '--'}</td>
+                        <td>${trade.position}</td>
+                        <td>$${trade.entry.toFixed(2)}</td>
+                        <td>${trade.target && trade.target > 0 ? '$' + trade.target.toFixed(2) : '--'}</td>
+                        <td>$${trade.stopLoss.toFixed(2)}</td>
+                        <td>${outcomeIcon} ${outcomeText}</td>
+                        <td class="${profitClass}">${profitText}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error("Error in renderHistory:", error);
+                showNotification("Error loading trade history", "error");
+            }
+        }
+
+        function filterHistory() {
+            renderHistory();
+            showNotification('History filtered successfully', 'info');
+        }
+
+        function clearHistory() {
+            if (confirm("Are you sure you want to clear all trade history?")) {
+                localStorage.removeItem('trades');
+                renderHistory();
+                updatePerformanceAnalytics();
+                updateRecommendedSize();
+                showNotification("Trade history cleared!", "warning");
+            }
+        }
+
+        function copyTradeHistory() {
+            try {
+                const trades = JSON.parse(localStorage.getItem('trades')) || [];
+                if (trades.length === 0) {
+                    showNotification("No trade history to copy", "error");
+                    return;
+                }
+
+                // Create CSV content
+                let csv = "Date,Time,Asset,Position,Entry,Target,Stop Loss,Outcome,Profit/Loss\n";
+                trades.forEach(trade => {
+                    let outcome = trade.outcome === 'win' ? 'Win' : trade.outcome === 'loss' ? 'Loss' : 'Pending';
+                    let profit = trade.outcome === 'pending' ? "Pending" :
+                        trade.profit > 0 ? `+$${trade.profit.toFixed(2)}` :
+                            `-$${Math.abs(trade.profit).toFixed(2)}`;
+
+                    csv += `${trade.date},${trade.time},${trade.asset || '--'},${trade.position},$${trade.entry.toFixed(2)},${trade.target && trade.target > 0 ? '$' + trade.target.toFixed(2) : '--'},$${trade.stopLoss.toFixed(2)},${outcome},${profit}\n`;
+                });
+
+                // Copy to clipboard
+                navigator.clipboard.writeText(csv)
+                    .then(() => {
+                        showNotification("Trade history copied to clipboard!", "success");
+                    })
+                    .catch(err => {
+                        console.error('Failed to copy trade history: ', err);
+                        showNotification("Failed to copy history. Please try again.", "error");
+                    });
+            } catch (error) {
+                console.error("Error in copyTradeHistory:", error);
+                showNotification("Error copying history", "error");
+            }
+        }
+
+        function showTradeSummary() {
+            const assetName = document.getElementById("assetName").value || "--";
+            const entry = document.getElementById("entry").value || "--";
+            const leverage = document.getElementById("leverage").value || "--";
+            const risk = document.getElementById("risk").value || "--";
+            const position = document.getElementById("longBtn").classList.contains("active") ? "Long" : "Short";
+            const slValue = document.getElementById("slValue").textContent || "$--";
+            const slPrice = document.getElementById("slPrice").textContent || "$--";
+            const profitValue = document.getElementById("profitValue").textContent || "$--";
+            const rrRatio = document.getElementById("rrRatio").textContent || "--";
+
+            // Get current date and time
+            const now = new Date();
+            const date = now.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+            const time = now.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            alert(`Trade Summary:
+Date: ${date}
+Time: ${time}
+Asset: ${assetName}
+Entry Price: $${entry}
+Leverage Amount: $${leverage}
+Risk: $${risk}
+Position: ${position}
+Stop Loss Value: ${slValue}
+Stop Loss Price: ${slPrice}
+Potential Profit: ${profitValue}
+Risk/Reward Ratio: ${rrRatio}`);
+        }
+
+        // Function to open the outcome update modal
+        function openUpdateOutcomeModal(tradeId) {
+            const trades = JSON.parse(localStorage.getItem('trades')) || [];
+            const trade = trades.find(t => t.id === tradeId);
+
+            if (!trade) return;
+
+            currentTradeToUpdate = trade;
+            selectedOutcomeForUpdate = null;
+
+            // Show modal
+            document.getElementById('updateOutcomeModal').style.display = 'flex';
+            document.getElementById('outcomePriceInput').style.display = 'none';
+            document.getElementById('updateOutcomePrice').value = '';
+
+            // Reset button styles
+            document.querySelectorAll('.update-outcome-btn').forEach(btn => {
+                btn.style.opacity = '0.6';
+            });
+        }
+
+        // Function to close the outcome update modal
+        function closeUpdateOutcomeModal() {
+            document.getElementById('updateOutcomeModal').style.display = 'none';
+            currentTradeToUpdate = null;
+            selectedOutcomeForUpdate = null;
+        }
+
+        // Function to set the outcome type for update
+        function setOutcome(outcome) {
+            selectedOutcomeForUpdate = outcome;
+
+            // Highlight selected button
+            document.querySelectorAll('.update-outcome-btn').forEach(btn => {
+                btn.style.opacity = '0.6';
+            });
+            event.target.style.opacity = '1';
+
+            // Show price input
+            document.getElementById('outcomePriceInput').style.display = 'block';
+            document.getElementById('outcomePriceLabel').textContent =
+                outcome === 'win' ? 'Target Price ($)' : 'Stop Loss Price ($)';
+            document.getElementById('updateOutcomePrice').placeholder =
+                outcome === 'win' ? 'Enter target price' : 'Enter stop loss price';
+        }
+
+        // Function to save the updated outcome
+        function saveOutcomeUpdate() {
+            try {
+                if (!selectedOutcomeForUpdate) {
+                    showNotification('Please select an outcome', 'error');
+                    return;
+                }
+
+                if (!currentTradeToUpdate) {
+                    showNotification('Trade data not found', 'error');
+                    return;
+                }
+
+                // Get exit price
+                const exitPrice = parseFloat(document.getElementById('updateOutcomePrice').value);
+                if (!exitPrice || exitPrice <= 0) {
+                    showNotification('Please enter a valid exit price', 'error');
+                    return;
+                }
+
+                // Calculate profit/loss
+                const entry = currentTradeToUpdate.entry;
+                const position = currentTradeToUpdate.position;
+                const leverage = currentTradeToUpdate.leverage || 1;
+                const originalAmount = currentTradeToUpdate.originalAmount || 0;
+                const leverageX = currentTradeToUpdate.leverageX || 1;
+
+                let profit = 0;
+                if (position === 'Long') {
+                    const priceDiff = exitPrice - entry;
+                    const percentageChange = priceDiff / entry;
+                    profit = originalAmount * percentageChange * leverageX;
+                } else {
+                    const priceDiff = entry - exitPrice;
+                    const percentageChange = priceDiff / entry;
+                    profit = originalAmount * percentageChange * leverageX;
+                }
+
+                // For losses, ensure profit is negative
+                if (selectedOutcomeForUpdate === 'loss' && profit > 0) {
+                    profit = -profit;
+                }
+                // For wins, ensure profit is positive
+                if (selectedOutcomeForUpdate === 'win' && profit < 0) {
+                    profit = -profit;
+                }
+
+                // Update the trade
+                const trades = JSON.parse(localStorage.getItem('trades')) || [];
+                const index = trades.findIndex(t => t.id === currentTradeToUpdate.id);
+
+                if (index !== -1) {
+                    trades[index].outcome = selectedOutcomeForUpdate;
+                    trades[index].profit = profit;
+                    trades[index].exitPrice = exitPrice;
+                    localStorage.setItem('trades', JSON.stringify(trades));
+                }
+
+                // Refresh UI
+                renderHistory();
+                updatePerformanceAnalytics();
+                updateRecommendedSize();
+                closeUpdateOutcomeModal();
+
+                showNotification('Trade outcome updated successfully!', 'success');
+            } catch (error) {
+                console.error("Error in saveOutcomeUpdate:", error);
+                showNotification("Error updating trade outcome", "error");
+            }
+        }
+
+        // Function to show notification
+        function showNotification(message, type = 'success') {
+            try {
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+
+                // Add icon based on notification type
+                let icon = '';
+                switch (type) {
+                    case 'success':
+                        icon = '<i class="fas fa-check-circle"></i>';
+                        break;
+                    case 'error':
+                        icon = '<i class="fas fa-exclamation-circle"></i>';
+                        break;
+                    case 'warning':
+                        icon = '<i class="fas fa-exclamation-triangle"></i>';
+                        break;
+                    case 'info':
+                        icon = '<i class="fas fa-info-circle"></i>';
+                        break;
+                }
+
+                notification.innerHTML = `${icon} ${message}`;
+
+                document.body.appendChild(notification);
+
+                // Fade in with animation
+                setTimeout(() => {
+                    notification.classList.add('show');
+                }, 10);
+
+                // Fade out and remove after delay
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.remove();
+                        }
+                    }, 300);
+                }, 3000);
+            } catch (error) {
+                console.error("Error in showNotification:", error);
+            }
+        }
+    </script>
+</body>
+
+</html>
